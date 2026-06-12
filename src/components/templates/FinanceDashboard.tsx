@@ -1,9 +1,8 @@
 "use client";
 
-import { FormEvent, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Banknote,
   CalendarDays,
   Car,
   CheckCircle2,
@@ -15,31 +14,21 @@ import {
   Gamepad2,
   Gift,
   GraduationCap,
-  Hash,
   HeartPulse,
   House,
   Landmark,
-  ListChecks,
-  Percent,
   PiggyBank,
   Plane,
-  ReceiptText,
-  Repeat,
   Shirt,
   ShoppingCart,
   Smartphone,
   Tag,
-  Timer,
-  TrendingDown,
-  Type,
   Utensils,
-  WalletCards,
   Zap,
   type LucideIcon,
 } from "lucide-react";
 import { Card as UiCard, CardContent, CardHeader, CardTitle } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/Button";
-import { AdvisorPanel } from "@/components/organismos/dashboard/AdvisorPanel";
 import { BalanceHero } from "@/components/organismos/dashboard/BalanceHero";
 import { CashflowChart, type CashflowPoint } from "@/components/organismos/dashboard/CashflowChart";
 import { CategoryDonut } from "@/components/organismos/dashboard/CategoryDonut";
@@ -51,12 +40,30 @@ import { CrudPanel } from "@/components/moleculas/CrudPanel";
 import { FormScreen } from "@/components/moleculas/FormScreen";
 import { Modal } from "@/components/moleculas/Modal";
 import { TableActions as Actions } from "@/components/moleculas/TableActions";
+import {
+  ActionsCell,
+  CardTag,
+  CategoryTag,
+  ColumnHead,
+  columnIcons,
+  DateCell,
+  debtStatusTone,
+  DescriptionCell,
+  DueDayCell,
+  EmptyTableState,
+  formatCurrency,
+  invoiceStatusTone,
+  MoneyCell,
+  MonthYearCell,
+  StatusCell,
+  TextCell,
+} from "@/components/moleculas/TableColumns";
+import { formatDate } from "@/lib/format";
 import { ColorPicker } from "@/components/moleculas/ColorPicker";
 import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
   TableHeader,
   TableRow,
 } from "@/components/atoms/table";
@@ -355,11 +362,6 @@ const categoryColorOptions = [
   "#111827",
 ];
 
-const currency = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-});
-
 const monthFormatter = new Intl.DateTimeFormat("pt-BR", {
   month: "long",
   year: "numeric",
@@ -373,16 +375,16 @@ function dateInput(value?: string | null) {
   return value ? new Date(value).toISOString().slice(0, 10) : "";
 }
 
-function dateLabel(value?: string | null) {
-  return value ? new Date(value).toLocaleDateString("pt-BR") : "-";
-}
-
 function invoiceDueDate(invoice: Invoice) {
   const monthIndex = invoice.month - 1;
   const lastDayOfMonth = new Date(invoice.year, invoice.month, 0).getDate();
   const dueDay = Math.min(invoice.card.dueDay, lastDayOfMonth);
 
   return new Date(invoice.year, monthIndex, dueDay, 12, 0, 0, 0);
+}
+
+function iconForCategory(category?: Pick<Category, "icon"> | null) {
+  return categoryIconOptions.find((option) => option.name === category?.icon)?.icon ?? Tag;
 }
 
 function asRecord(item: unknown): Record<string, unknown> {
@@ -427,13 +429,6 @@ export function FinanceDashboard({ initialTab = "overview" }: { initialTab?: Tab
     router.push(hrefForTab(visibleTab));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [router]);
-
-  const scrollToCashflow = useCallback(() => {
-    navigateToTab("overview");
-    window.setTimeout(() => {
-      document.getElementById("cashflow-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 50);
-  }, [navigateToTab]);
 
   useEffect(() => {
     navigation?.setNavigateHandler(navigateToTab);
@@ -694,7 +689,7 @@ export function FinanceDashboard({ initialTab = "overview" }: { initialTab?: Tab
         income.amount,
         income.isRecurring ? "recorrente" : "isolada",
         income.recurrenceType,
-        dateLabel(income.date),
+        formatDate(income.date),
       ]) && matchesSelectFilter(incomesFilter.type, recurrence)
     );
   });
@@ -705,7 +700,7 @@ export function FinanceDashboard({ initialTab = "overview" }: { initialTab?: Tab
       transaction.type === "INFLOW" ? "entrada" : "saída",
       transaction.category?.name,
       transaction.card?.name,
-      dateLabel(transaction.date),
+      formatDate(transaction.date),
     ]) &&
     matchesSelectFilter(transactionsFilter.type, transaction.type) &&
     matchesSelectFilter(transactionsFilter.categoryId, transaction.categoryId ?? "") &&
@@ -760,7 +755,7 @@ export function FinanceDashboard({ initialTab = "overview" }: { initialTab?: Tab
       debt.category?.name,
       debt.isRecurring ? "recorrente" : "isolada",
       debt.isPaid ? "paga" : "pendente",
-      dateLabel(debt.date),
+      formatDate(debt.date),
     ]) &&
     matchesSelectFilter(debtsFilter.categoryId, debt.categoryId ?? "") &&
     matchesSelectFilter(debtsFilter.status, debt.isPaid ? "true" : "false") &&
@@ -866,8 +861,6 @@ export function FinanceDashboard({ initialTab = "overview" }: { initialTab?: Tab
           invoices={data.invoices}
           installments={data.installments}
           onEdit={(resource, item) => edit(resource, asRecord(item))}
-          onShowCashflow={scrollToCashflow}
-          onShowCategories={() => navigateToTab("categories")}
           transactions={data.transactions}
         />
       ) : null}
@@ -1101,16 +1094,12 @@ function Overview({
   installments,
   transactions,
   onEdit,
-  onShowCategories,
-  onShowCashflow,
 }: {
   advice: Advice | null;
   invoices: Invoice[];
   installments: Installment[];
   transactions: Transaction[];
   onEdit: (resource: Tab, item: unknown) => void;
-  onShowCategories: () => void;
-  onShowCashflow: () => void;
 }) {
   return (
     <div className={styles.overviewStack}>
@@ -1124,12 +1113,6 @@ function Overview({
             <CashflowChart data={advice?.monthlyCashflow ?? []} />
           </div>
         </article>
-        <AdvisorPanel
-          daysRemaining={advice?.daysRemaining ?? 0}
-          healthyDailySpend={advice?.healthyDailySpend ?? 0}
-          onShowCashflow={onShowCashflow}
-          onShowCategories={onShowCategories}
-        />
       </section>
 
       <section className={dashboardStyles.bottomRow}>
@@ -1168,15 +1151,15 @@ function Overview({
                 <div className={styles.categoryRow} key={category.id}>
                   <div className={styles.categoryTop}>
                     <strong>{category.name}</strong>
-                    <span>{category.remaining === null ? "sem meta" : currency.format(category.remaining)}</span>
+                    <span>{category.remaining === null ? "sem meta" : formatCurrency(category.remaining)}</span>
                   </div>
                   <div className={styles.bar}>
                     <div className={styles.barFill} style={{ width: `${category.usage}%`, background: category.color }} />
                   </div>
                   <div className={styles.categoryHint}>
-                    gasto: {currency.format(category.spent)} · meta:{" "}
-                    {category.target > 0 ? currency.format(category.target) : "sem meta"} · por dia:{" "}
-                    {category.dailyAllowance === null ? "sem meta" : currency.format(category.dailyAllowance)}
+                    gasto: {formatCurrency(category.spent)} · meta:{" "}
+                    {category.target > 0 ? formatCurrency(category.target) : "sem meta"} · por dia:{" "}
+                    {category.dailyAllowance === null ? "sem meta" : formatCurrency(category.dailyAllowance)}
                   </div>
                 </div>
               ))
@@ -1201,24 +1184,11 @@ function Overview({
   );
 }
 
-function EmptyTable() {
-  return <div className={styles.empty}>Nenhum registro ainda.</div>;
-}
-
-function Th({ icon: Icon, children }: { icon: LucideIcon; children: ReactNode }) {
-  return (
-    <span className={styles.thLabel}>
-      <Icon size={14} />
-      {children}
-    </span>
-  );
-}
-
 function RecurrenceTag({ income }: { income: Income }) {
   return (
     <span className={income.isRecurring ? styles.recurrenceTag : styles.singleTag}>
       <CalendarDays size={13} />
-      {income.isRecurring ? recurrenceLabel(income) : `Única · ${dateLabel(income.date)}`}
+      {income.isRecurring ? recurrenceLabel(income) : `Única · ${formatDate(income.date)}`}
     </span>
   );
 }
@@ -1490,7 +1460,7 @@ function FixedExpenseForm(props: {
       </FieldGroup>
       <div className={styles.variationInlinePreview}>
         {hasVariationPreview
-          ? `Varia entre ${currency.format(lowerPreview)} e ${currency.format(upperPreview)}`
+          ? `Varia entre ${formatCurrency(lowerPreview)} e ${formatCurrency(upperPreview)}`
           : "Informe valor e margem para ver a variação"}
       </div>
       <FieldGroup>
@@ -1737,18 +1707,28 @@ function CardSelect({
 }
 
 function CardsTable({ cards, onEdit, onDelete }: { cards: Card[]; onEdit: (item: Card) => void; onDelete: (id: string) => void }) {
-  if (!cards.length) return <EmptyTable />;
+  if (!cards.length) return <EmptyTableState />;
   return (
     <Table>
-      <TableHeader><TableRow><TableHead><Th icon={CreditCard}>Cartão</Th></TableHead><TableHead><Th icon={Banknote}>Limite</Th></TableHead><TableHead><Th icon={CalendarDays}>Fechamento</Th></TableHead><TableHead><Th icon={Timer}>Vencimento</Th></TableHead><TableHead /></TableRow></TableHeader>
+      <TableHeader>
+        <TableRow>
+          <ColumnHead kind="card" />
+          <ColumnHead kind="money" label="Limite" />
+          <ColumnHead kind="dueDay" label="Fechamento" />
+          <ColumnHead kind="dueDay" />
+          <ColumnHead kind="actions" />
+        </TableRow>
+      </TableHeader>
       <TableBody>
         {cards.map((card) => (
           <TableRow key={card.id}>
-            <TableCell><span className={styles.colorDot} style={{ background: card.color }} />{card.name}</TableCell>
-            <TableCell>{currency.format(card.limit)}</TableCell>
-            <TableCell>Dia {card.closingDay}</TableCell>
-            <TableCell>Dia {card.dueDay}</TableCell>
-            <TableCell><Actions onEdit={() => onEdit(card)} onDelete={() => onDelete(card.id)} /></TableCell>
+            <TextCell>
+              <CardTag color={card.color} name={card.name} />
+            </TextCell>
+            <MoneyCell value={card.limit} />
+            <DueDayCell day={card.closingDay} />
+            <DueDayCell day={card.dueDay} />
+            <ActionsCell onDelete={() => onDelete(card.id)} onEdit={() => onEdit(card)} />
           </TableRow>
         ))}
       </TableBody>
@@ -1757,28 +1737,39 @@ function CardsTable({ cards, onEdit, onDelete }: { cards: Card[]; onEdit: (item:
 }
 
 function CategoriesTable({ categories, allocations, onEdit, onDelete }: { categories: Category[]; allocations: CategoryAllocation[]; onEdit: (item: Category) => void; onDelete: (id: string) => void }) {
-  if (!categories.length) return <EmptyTable />;
+  if (!categories.length) return <EmptyTableState />;
   return (
     <Table>
-      <TableHeader><TableRow><TableHead><Th icon={Tag}>Categoria</Th></TableHead><TableHead><Th icon={Percent}>Meta</Th></TableHead><TableHead><Th icon={WalletCards}>Restante</Th></TableHead><TableHead><Th icon={CalendarDays}>Diário</Th></TableHead><TableHead /></TableRow></TableHeader>
+      <TableHeader>
+        <TableRow>
+          <ColumnHead kind="category" />
+          <ColumnHead kind="percent" />
+          <ColumnHead icon={columnIcons.remaining} kind="money" label="Restante" />
+          <ColumnHead kind="money" label="Diário" />
+          <ColumnHead kind="actions" />
+        </TableRow>
+      </TableHeader>
       <TableBody>
         {categories.map((category) => {
           const allocation = allocations.find((item) => item.id === category.id);
-          const CategoryIcon = categoryIconOptions.find((option) => option.name === category.icon)?.icon ?? Tag;
+          const CategoryIcon = iconForCategory(category);
           return (
             <TableRow key={category.id}>
-              <TableCell>
-                <span className={styles.categoryIdentity}>
-                  <span className={styles.categoryIconBadge} style={{ backgroundColor: category.color }}>
-                    <CategoryIcon size={14} />
-                  </span>
-                  {category.name}
-                </span>
-              </TableCell>
-              <TableCell>{category.maxLimit ? currency.format(category.maxLimit) : `${category.allocationPercentage ?? 0}%`}</TableCell>
-              <TableCell>{allocation?.remaining === null || allocation?.remaining === undefined ? "-" : currency.format(allocation.remaining)}</TableCell>
-              <TableCell>{allocation?.dailyAllowance === null || allocation?.dailyAllowance === undefined ? "-" : currency.format(allocation.dailyAllowance)}</TableCell>
-              <TableCell><Actions onEdit={() => onEdit(category)} onDelete={() => onDelete(category.id)} /></TableCell>
+              <TextCell>
+                <CategoryTag color={category.color} icon={CategoryIcon} name={category.name} />
+              </TextCell>
+              <TextCell>{category.maxLimit ? formatCurrency(category.maxLimit) : `${category.allocationPercentage ?? 0}%`}</TextCell>
+              {allocation?.remaining == null ? (
+                <TextCell className="text-muted-foreground">-</TextCell>
+              ) : (
+                <MoneyCell value={allocation.remaining} />
+              )}
+              {allocation?.dailyAllowance == null ? (
+                <TextCell className="text-muted-foreground">-</TextCell>
+              ) : (
+                <MoneyCell value={allocation.dailyAllowance} />
+              )}
+              <ActionsCell onDelete={() => onDelete(category.id)} onEdit={() => onEdit(category)} />
             </TableRow>
           );
         })}
@@ -1788,36 +1779,82 @@ function CategoriesTable({ categories, allocations, onEdit, onDelete }: { catego
 }
 
 function IncomesTable({ incomes, onEdit, onDelete }: { incomes: Income[]; onEdit: (item: Income) => void; onDelete: (id: string) => void }) {
-  if (!incomes.length) return <EmptyTable />;
+  if (!incomes.length) return <EmptyTableState />;
   return (
     <Table>
-      <TableHeader><TableRow><TableHead><Th icon={Type}>Descrição</Th></TableHead><TableHead><Th icon={Banknote}>Valor</Th></TableHead><TableHead><Th icon={Repeat}>Recorrência</Th></TableHead><TableHead /></TableRow></TableHeader>
-      <TableBody>{incomes.map((income) => (
-        <TableRow key={income.id}>
-          <TableCell>{income.description}<small>{income.isRecurring ? "Recorrente" : "Isolada"}</small></TableCell>
-          <TableCell>{currency.format(income.amount)}</TableCell>
-          <TableCell><RecurrenceTag income={income} /></TableCell>
-          <TableCell><Actions onEdit={() => onEdit(income)} onDelete={() => onDelete(income.id)} /></TableCell>
+      <TableHeader>
+        <TableRow>
+          <ColumnHead kind="description" />
+          <ColumnHead kind="money" />
+          <ColumnHead kind="recurrence" />
+          <ColumnHead kind="actions" />
         </TableRow>
-      ))}</TableBody>
+      </TableHeader>
+      <TableBody>
+        {incomes.map((income) => (
+          <TableRow key={income.id}>
+            <DescriptionCell subtitle={income.isRecurring ? "Recorrente" : "Isolada"} title={income.description} />
+            <MoneyCell tone="positive" value={income.amount} />
+            <TextCell>
+              <RecurrenceTag income={income} />
+            </TextCell>
+            <ActionsCell onDelete={() => onDelete(income.id)} onEdit={() => onEdit(income)} />
+          </TableRow>
+        ))}
+      </TableBody>
     </Table>
   );
 }
 
 function TransactionsTable({ transactions, compact, onEdit, onDelete }: { transactions: Transaction[]; compact?: boolean; onEdit: (item: Transaction) => void; onDelete?: (id: string) => void }) {
-  if (!transactions.length) return <EmptyTable />;
+  if (!transactions.length) return <EmptyTableState />;
   return (
     <Table>
-      <TableHeader><TableRow><TableHead><Th icon={Type}>Descrição</Th></TableHead><TableHead><Th icon={Tag}>Categoria</Th></TableHead><TableHead><Th icon={CalendarDays}>Data</Th></TableHead><TableHead><Th icon={Banknote}>Valor</Th></TableHead><TableHead /></TableRow></TableHeader>
-      <TableBody>{transactions.map((transaction) => (
-        <TableRow key={transaction.id}>
-          <TableCell>{transaction.description}<small>{transaction.card?.name ?? (transaction.type === "INFLOW" ? "Entrada" : "Conta")}</small></TableCell>
-          <TableCell>{transaction.category?.name ?? "-"}</TableCell>
-          <TableCell>{dateLabel(transaction.date)}</TableCell>
-          <TableCell className={transaction.type === "INFLOW" ? styles.positive : styles.negative}>{currency.format(transaction.amount)}</TableCell>
-          <TableCell>{compact ? <Actions onEdit={() => onEdit(transaction)} /> : <Actions onEdit={() => onEdit(transaction)} onDelete={onDelete ? () => onDelete(transaction.id) : undefined} />}</TableCell>
+      <TableHeader>
+        <TableRow>
+          <ColumnHead kind="description" />
+          <ColumnHead kind="category" />
+          <ColumnHead kind="date" />
+          <ColumnHead kind="money" />
+          <ColumnHead kind="actions" />
         </TableRow>
-      ))}</TableBody>
+      </TableHeader>
+      <TableBody>
+        {transactions.map((transaction) => (
+          <TableRow key={transaction.id}>
+            <DescriptionCell
+              subtitle={
+                transaction.card ? (
+                  <CardTag color={transaction.card.color} name={transaction.card.name} />
+                ) : (
+                  transaction.type === "INFLOW" ? "Entrada" : "Conta"
+                )
+              }
+              title={transaction.description}
+            />
+            <TextCell>
+              {transaction.category ? (
+                <CategoryTag
+                  color={transaction.category.color}
+                  icon={iconForCategory(transaction.category)}
+                  name={transaction.category.name}
+                />
+              ) : (
+                "-"
+              )}
+            </TextCell>
+            <DateCell value={transaction.date} />
+            <MoneyCell
+              tone={transaction.type === "INFLOW" ? "positive" : "negative"}
+              value={transaction.amount}
+            />
+            <ActionsCell
+              onDelete={compact || !onDelete ? undefined : () => onDelete(transaction.id)}
+              onEdit={() => onEdit(transaction)}
+            />
+          </TableRow>
+        ))}
+      </TableBody>
     </Table>
   );
 }
@@ -1833,63 +1870,106 @@ function FixedExpensesTable({
   onDelete: (id: string) => void;
   onTogglePaid: (item: FixedExpense) => void;
 }) {
-  if (!expenses.length) return <EmptyTable />;
+  if (!expenses.length) return <EmptyTableState />;
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth() + 1;
   const currentYear = currentDate.getFullYear();
 
   return (
     <Table>
-      <TableHeader><TableRow><TableHead><Th icon={ReceiptText}>Gasto</Th></TableHead><TableHead><Th icon={Tag}>Categoria</Th></TableHead><TableHead><Th icon={TrendingDown}>Valor previsto</Th></TableHead><TableHead><Th icon={CalendarDays}>Recorrência</Th></TableHead><TableHead><Th icon={CheckCircle2}>Mês atual</Th></TableHead><TableHead /></TableRow></TableHeader>
-      <TableBody>{expenses.map((expense) => {
-        const isPaid = Boolean(
-          expense.payments?.some(
-            (payment) => payment.month === currentMonth && payment.year === currentYear && payment.isPaid
-          )
-        );
+      <TableHeader>
+        <TableRow>
+          <ColumnHead icon={columnIcons.expense} kind="description" label="Gasto" />
+          <ColumnHead kind="category" />
+          <ColumnHead icon={columnIcons.forecast} kind="money" label="Valor previsto" />
+          <ColumnHead kind="recurrence" />
+          <ColumnHead kind="status" label="Mês atual" />
+          <ColumnHead kind="actions" />
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {expenses.map((expense) => {
+          const isPaid = Boolean(
+            expense.payments?.some(
+              (payment) => payment.month === currentMonth && payment.year === currentYear && payment.isPaid
+            )
+          );
 
-        return (
-          <TableRow key={expense.id}>
-            <TableCell>{expense.description}<small>{expense.isActive ? "Ativa" : "Inativa"}</small></TableCell>
-            <TableCell>{expense.category.name}</TableCell>
-            <TableCell>{currency.format(expense.amount * (1 + expense.variationMargin / 100))}<small>margem {expense.variationMargin}%</small></TableCell>
-            <TableCell><ExpenseRecurrenceTag expense={expense} /></TableCell>
-            <TableCell>
-              <button
-                className={`${styles.paymentToggle} ${isPaid ? styles.paymentTogglePaid : ""}`}
-                onClick={() => onTogglePaid(expense)}
-                type="button"
-              >
-                <CheckCircle2 size={14} />
-                {isPaid ? "Pago" : "Pendente"}
-              </button>
-            </TableCell>
-            <TableCell><Actions onEdit={() => onEdit(expense)} onDelete={() => onDelete(expense.id)} /></TableCell>
-          </TableRow>
-        );
-      })}</TableBody>
+          return (
+            <TableRow key={expense.id}>
+              <DescriptionCell subtitle={expense.isActive ? "Ativa" : "Inativa"} title={expense.description} />
+              <TextCell>
+                <CategoryTag
+                  color={expense.category.color}
+                  icon={iconForCategory(expense.category)}
+                  name={expense.category.name}
+                />
+              </TextCell>
+              <MoneyCell
+                subtitle={`margem ${expense.variationMargin}%`}
+                tone="negative"
+                value={expense.amount * (1 + expense.variationMargin / 100)}
+              />
+              <TextCell>
+                <ExpenseRecurrenceTag expense={expense} />
+              </TextCell>
+              <TableCell>
+                <button
+                  className={`${styles.paymentToggle} ${isPaid ? styles.paymentTogglePaid : ""}`}
+                  onClick={() => onTogglePaid(expense)}
+                  type="button"
+                >
+                  <CheckCircle2 size={14} />
+                  {isPaid ? "Pago" : "Pendente"}
+                </button>
+              </TableCell>
+              <ActionsCell onDelete={() => onDelete(expense.id)} onEdit={() => onEdit(expense)} />
+            </TableRow>
+          );
+        })}
+      </TableBody>
     </Table>
   );
 }
 
 function InstallmentsTable({ installments, compact, onEdit, onDelete }: { installments: Installment[]; compact?: boolean; onEdit: (item: Installment) => void; onDelete?: (id: string) => void }) {
-  if (!installments.length) return <EmptyTable />;
+  if (!installments.length) return <EmptyTableState />;
   return (
     <Table>
-      <TableHeader><TableRow><TableHead><Th icon={ReceiptText}>Compra</Th></TableHead><TableHead><Th icon={CreditCard}>Cartão</Th></TableHead><TableHead><Th icon={Hash}>Parcela</Th></TableHead><TableHead><Th icon={CalendarDays}>Termina em</Th></TableHead><TableHead /></TableRow></TableHeader>
-      <TableBody>{installments.map((installment) => {
-        const end = new Date(installment.startDate);
-        end.setMonth(end.getMonth() + installment.totalInstallments - installment.currentInstallment);
-        return (
-          <TableRow key={installment.id}>
-            <TableCell>{installment.description}<small>{currency.format(installment.amountPerInstallment)} por mês</small></TableCell>
-            <TableCell>{installment.card.name}</TableCell>
-            <TableCell>{installment.currentInstallment}/{installment.totalInstallments}</TableCell>
-            <TableCell>{dateLabel(end.toISOString())}</TableCell>
-            <TableCell>{compact ? <Actions onEdit={() => onEdit(installment)} /> : <Actions onEdit={() => onEdit(installment)} onDelete={onDelete ? () => onDelete(installment.id) : undefined} />}</TableCell>
-          </TableRow>
-        );
-      })}</TableBody>
+      <TableHeader>
+        <TableRow>
+          <ColumnHead icon={columnIcons.expense} kind="description" label="Compra" />
+          <ColumnHead kind="card" />
+          <ColumnHead kind="installment" />
+          <ColumnHead kind="date" label="Termina em" />
+          <ColumnHead kind="actions" />
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {installments.map((installment) => {
+          const end = new Date(installment.startDate);
+          end.setMonth(end.getMonth() + installment.totalInstallments - installment.currentInstallment);
+          return (
+            <TableRow key={installment.id}>
+              <DescriptionCell
+                subtitle={`${formatCurrency(installment.amountPerInstallment)} por mês`}
+                title={installment.description}
+              />
+              <TextCell>
+                <CardTag color={installment.card.color} name={installment.card.name} />
+              </TextCell>
+              <TextCell>
+                {installment.currentInstallment}/{installment.totalInstallments}
+              </TextCell>
+              <DateCell value={end.toISOString()} />
+              <ActionsCell
+                onDelete={compact || !onDelete ? undefined : () => onDelete(installment.id)}
+                onEdit={() => onEdit(installment)}
+              />
+            </TableRow>
+          );
+        })}
+      </TableBody>
     </Table>
   );
 }
@@ -1921,7 +2001,7 @@ function InvoiceTimeline({
           <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Timeline mensal</div>
           <h3 className="m-0 mt-1 text-lg font-semibold capitalize text-foreground">{monthLabel}</h3>
           <p className="m-0 mt-1 text-sm text-muted-foreground">
-            {invoices.length} fatura{invoices.length === 1 ? "" : "s"} · {currency.format(totalAmount)}
+            {invoices.length} fatura{invoices.length === 1 ? "" : "s"} · {formatCurrency(totalAmount)}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -1941,7 +2021,7 @@ function InvoiceTimeline({
           <CardHeader>
             <CardTitle>Total do mês</CardTitle>
           </CardHeader>
-          <CardContent className="text-xl font-bold">{currency.format(totalAmount)}</CardContent>
+          <CardContent className="text-xl font-bold">{formatCurrency(totalAmount)}</CardContent>
         </UiCard>
         <UiCard size="sm">
           <CardHeader>
@@ -1965,7 +2045,9 @@ function InvoiceTimeline({
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <h4 className="m-0 text-base font-semibold text-foreground">{invoice.card.name}</h4>
+                    <h4 className="m-0 text-base font-semibold text-foreground">
+                      <CardTag color={invoice.card.color} name={invoice.card.name} />
+                    </h4>
                     <span
                       className={`badge ${
                         invoice.status === "PAGA"
@@ -1983,11 +2065,11 @@ function InvoiceTimeline({
                   </p>
                   <p className="m-0 mt-2 inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">
                     <CalendarDays size={14} />
-                    Vence em {dateLabel(invoiceDueDate(invoice).toISOString())}
+                    Vence em {formatDate(invoiceDueDate(invoice).toISOString())}
                   </p>
                 </div>
                 <div className="text-right">
-                  <div className="text-lg font-bold text-foreground">{currency.format(invoice.realAmount)}</div>
+                  <div className="text-lg font-bold text-foreground">{formatCurrency(invoice.realAmount)}</div>
                   <Actions onEdit={() => onEdit(invoice)} onDelete={() => onDelete(invoice.id)} />
                 </div>
               </div>
@@ -2004,53 +2086,81 @@ function InvoiceTimeline({
 }
 
 function InvoicesTable({ invoices, compact, onEdit, onDelete }: { invoices: Invoice[]; compact?: boolean; onEdit: (item: Invoice) => void; onDelete?: (id: string) => void }) {
-  if (!invoices.length) return <EmptyTable />;
+  if (!invoices.length) return <EmptyTableState />;
   return (
     <Table>
-      <TableHeader><TableRow><TableHead><Th icon={CreditCard}>Cartão</Th></TableHead><TableHead><Th icon={CalendarDays}>Mês</Th></TableHead><TableHead><Th icon={CheckCircle2}>Status</Th></TableHead><TableHead><Th icon={Banknote}>Valor real</Th></TableHead><TableHead /></TableRow></TableHeader>
-      <TableBody>{invoices.map((invoice) => (
-        <TableRow key={invoice.id}>
-          <TableCell>{invoice.card.name}</TableCell>
-          <TableCell>{String(invoice.month).padStart(2, "0")}/{invoice.year}</TableCell>
-          <TableCell>
-            <span
-              className={`badge ${
-                invoice.status === "PAGA"
-                  ? "badge-success"
-                  : invoice.status === "FECHADA"
-                    ? "badge-warning"
-                    : ""
-              }`}
-            >
-              {invoice.status}
-            </span>
-          </TableCell>
-          <TableCell>{currency.format(invoice.realAmount)}</TableCell>
-          <TableCell>{compact ? <Actions onEdit={() => onEdit(invoice)} /> : <Actions onEdit={() => onEdit(invoice)} onDelete={onDelete ? () => onDelete(invoice.id) : undefined} />}</TableCell>
+      <TableHeader>
+        <TableRow>
+          <ColumnHead kind="card" />
+          <ColumnHead kind="month" />
+          <ColumnHead kind="status" />
+          <ColumnHead kind="money" label="Valor real" />
+          <ColumnHead kind="actions" />
         </TableRow>
-      ))}</TableBody>
+      </TableHeader>
+      <TableBody>
+        {invoices.map((invoice) => (
+          <TableRow key={invoice.id}>
+            <TextCell>
+              <CardTag color={invoice.card.color} name={invoice.card.name} />
+            </TextCell>
+            <MonthYearCell month={invoice.month} year={invoice.year} />
+            <StatusCell label={invoice.status} tone={invoiceStatusTone(invoice.status)} />
+            <MoneyCell tone="negative" value={invoice.realAmount} />
+            <ActionsCell
+              onDelete={compact || !onDelete ? undefined : () => onDelete(invoice.id)}
+              onEdit={() => onEdit(invoice)}
+            />
+          </TableRow>
+        ))}
+      </TableBody>
     </Table>
   );
 }
 
 function DebtsTable({ debts, onEdit, onDelete }: { debts: Debt[]; onEdit: (item: Debt) => void; onDelete: (id: string) => void }) {
-  if (!debts.length) return <EmptyTable />;
+  if (!debts.length) return <EmptyTableState />;
   return (
     <Table>
-      <TableHeader><TableRow><TableHead><Th icon={ListChecks}>Dívida</Th></TableHead><TableHead><Th icon={Tag}>Categoria</Th></TableHead><TableHead><Th icon={CalendarDays}>Quando</Th></TableHead><TableHead><Th icon={CheckCircle2}>Status</Th></TableHead><TableHead /></TableRow></TableHeader>
-      <TableBody>{debts.map((debt) => (
-        <TableRow key={debt.id}>
-          <TableCell>{debt.description}<small>{currency.format(debt.amount)}</small></TableCell>
-          <TableCell>{debt.category?.name ?? "-"}</TableCell>
-          <TableCell>{debt.isRecurring ? `Todo dia ${debt.dueDay ?? new Date(debt.date).getDate()}` : dateLabel(debt.date)}</TableCell>
-          <TableCell>
-            <span className={`badge ${debt.isPaid ? "badge-success" : "badge-warning"}`}>
-              {debt.isPaid ? "Paga" : "Pendente"}
-            </span>
-          </TableCell>
-          <TableCell><Actions onEdit={() => onEdit(debt)} onDelete={() => onDelete(debt.id)} /></TableCell>
+      <TableHeader>
+        <TableRow>
+          <ColumnHead icon={columnIcons.debt} kind="description" label="Dívida" />
+          <ColumnHead kind="category" />
+          <ColumnHead kind="date" label="Quando" />
+          <ColumnHead kind="status" />
+          <ColumnHead kind="actions" />
         </TableRow>
-      ))}</TableBody>
+      </TableHeader>
+      <TableBody>
+        {debts.map((debt) => (
+          <TableRow key={debt.id}>
+            <DescriptionCell subtitle={formatCurrency(debt.amount)} title={debt.description} />
+            <TextCell>
+              {debt.category ? (
+                <CategoryTag
+                  color={debt.category.color}
+                  icon={iconForCategory(debt.category)}
+                  name={debt.category.name}
+                />
+              ) : (
+                "-"
+              )}
+            </TextCell>
+            {debt.isRecurring ? (
+              <TextCell className="text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
+                  <CalendarDays className="size-3.5 shrink-0 text-muted-foreground/80" />
+                  Todo dia {debt.dueDay ?? new Date(debt.date).getDate()}
+                </span>
+              </TextCell>
+            ) : (
+              <DateCell value={debt.date} />
+            )}
+            <StatusCell label={debt.isPaid ? "Paga" : "Pendente"} tone={debtStatusTone(debt.isPaid)} />
+            <ActionsCell onDelete={() => onDelete(debt.id)} onEdit={() => onEdit(debt)} />
+          </TableRow>
+        ))}
+      </TableBody>
     </Table>
   );
 }

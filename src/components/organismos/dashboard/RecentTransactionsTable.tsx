@@ -1,4 +1,13 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/atoms/table";
+import {
+  CardTag,
+  ColumnHead,
+  DateCell,
+  DescriptionCell,
+  EmptyTableState,
+  MoneyCell,
+  TextCell,
+} from "@/components/moleculas/TableColumns";
+import { Table, TableBody, TableHeader, TableRow } from "@/components/atoms/table";
 
 type Category = {
   name: string;
@@ -7,6 +16,7 @@ type Category = {
 
 type Card = {
   name: string;
+  color?: string | null;
 };
 
 type Transaction = {
@@ -19,20 +29,6 @@ type Transaction = {
   card?: Card | null;
 };
 
-const currency = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-});
-
-function dateLabel(value: string) {
-  return new Date(value).toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 type RecentTransactionsTableProps = {
   transactions: Transaction[];
   onEdit?: (transaction: Transaction) => void;
@@ -40,38 +36,42 @@ type RecentTransactionsTableProps = {
 
 export function RecentTransactionsTable({ transactions, onEdit }: RecentTransactionsTableProps) {
   if (!transactions.length) {
-    return <div className="rounded-xl border border-dashed border-border bg-background p-6 text-sm text-muted-foreground">Nenhuma movimentação registrada ainda.</div>;
+    return <EmptyTableState message="Nenhuma movimentação registrada ainda." />;
   }
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Transação</TableHead>
-          <TableHead>Conta</TableHead>
-          <TableHead>Data</TableHead>
-          <TableHead>Valor</TableHead>
+          <ColumnHead kind="description" label="Transação" />
+          <ColumnHead kind="card" label="Conta" />
+          <ColumnHead kind="date" />
+          <ColumnHead kind="money" />
         </TableRow>
       </TableHeader>
       <TableBody>
         {transactions.map((transaction) => (
           <TableRow
             key={transaction.id}
-            onClick={() => onEdit?.(transaction)}
             className={onEdit ? "cursor-pointer" : undefined}
+            onClick={() => onEdit?.(transaction)}
           >
-            <TableCell>
-              <div className="grid gap-0.5">
-                <span className="font-medium text-foreground">{transaction.description}</span>
-                <span className="text-xs text-muted-foreground">{transaction.category?.name ?? "Sem categoria"}</span>
-              </div>
-            </TableCell>
-            <TableCell>{transaction.card?.name ?? (transaction.type === "INFLOW" ? "Entrada" : "Conta")}</TableCell>
-            <TableCell>{dateLabel(transaction.date)}</TableCell>
-            <TableCell className={transaction.type === "INFLOW" ? "font-medium text-emerald-600" : "font-medium text-destructive"}>
-              {transaction.type === "OUTFLOW" ? "-" : "+"}
-              {currency.format(transaction.amount)}
-            </TableCell>
+            <DescriptionCell
+              subtitle={transaction.category?.name ?? "Sem categoria"}
+              title={transaction.description}
+            />
+            <TextCell>
+              {transaction.card ? (
+                <CardTag color={transaction.card.color} name={transaction.card.name} />
+              ) : (
+                transaction.type === "INFLOW" ? "Entrada" : "Conta"
+              )}
+            </TextCell>
+            <DateCell format="datetime" value={transaction.date} />
+            <MoneyCell
+              tone={transaction.type === "INFLOW" ? "positive" : "negative"}
+              value={transaction.amount}
+            />
           </TableRow>
         ))}
       </TableBody>

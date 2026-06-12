@@ -11,19 +11,19 @@ export function TableActions({
   onEdit?: () => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-end gap-2">
+    <div className="flex flex-nowrap items-center justify-end gap-1">
       {onEdit ? (
-        <IconButton label="Editar" onClick={onEdit}>
-          <Pencil size={15} />
+        <IconButton className="size-7" label="Editar" onClick={onEdit}>
+          <Pencil size={14} />
         </IconButton>
       ) : null}
       {onDelete ? (
         <IconButton
-          className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          className="size-7 border-red-200 text-red-400 hover:border-red-300 hover:bg-red-50 hover:text-red-500"
           label="Excluir"
           onClick={onDelete}
         >
-          <Trash2 size={15} />
+          <Trash2 size={14} />
         </IconButton>
       ) : null}
     </div>

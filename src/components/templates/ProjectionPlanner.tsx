@@ -156,8 +156,8 @@ export function ProjectionPlanner() {
                 <div key={group.date} className={styles.event}>
                   <div className={styles.eventDate}>{dateFormatter.format(new Date(group.date))}</div>
                   <ul className={styles.eventItems}>
-                    {group.events.map((event) => (
-                      <li key={`${group.date}-${event.label}-${event.amount}`}>
+                    {group.events.map((event, index) => (
+                      <li key={`${group.date}-${event.type}-${index}`}>
                         {event.label}{" "}
                         <strong className={event.amount >= 0 ? styles.positive : styles.negative}>
                           {currency.format(event.amount)}

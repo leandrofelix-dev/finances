@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, Menu, Search, Settings, X } from "lucide-react";
+import { Bell, Menu, Search, X } from "lucide-react";
 import { Button } from "@/components/atoms/Button";
 import {
   CommandDialog,
@@ -109,9 +109,6 @@ export function AppHeader() {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button aria-label="Configurações" onClick={() => goToTab("categories")} size="icon" variant="secondary">
-          <Settings size={18} />
-        </Button>
         <Button aria-label="Dívidas pendentes" onClick={() => goToTab("debts")} size="icon" variant="secondary">
           <Bell size={18} />
         </Button>
