@@ -1,0 +1,134 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--fynix-border);
+  background: var(--fynix-surface);
+  padding: 14px 28px;
+}
+
+.searchWrap {
+  position: relative;
+  flex: 1;
+  max-width: 480px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--fynix-muted);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  border: 1px solid var(--fynix-border);
+  border-radius: 999px;
+  background: var(--fynix-bg);
+  color: var(--fynix-text);
+  padding: 10px 14px 10px 42px;
+}
+
+.searchInput:focus {
+  border-color: var(--fynix-accent);
+  outline: 2px solid color-mix(in srgb, var(--fynix-accent) 25%, transparent);
+  outline-offset: 0;
+}
+
+.searchResults {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  border: 1px solid var(--fynix-border);
+  border-radius: var(--fynix-radius);
+  background: var(--fynix-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.searchResult {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--fynix-border);
+  background: transparent;
+  color: var(--fynix-text);
+  padding: 10px 14px;
+  text-align: left;
+}
+
+.searchResult:last-child {
+  border-bottom: 0;
+}
+
+.searchResult:hover {
+  background: var(--fynix-hover);
+}
+
+.searchResult small {
+  color: var(--fynix-muted);
+  font-size: 0.76rem;
+}
+
+.searchEmpty {
+  color: var(--fynix-muted);
+  font-size: 0.84rem;
+  padding: 12px 14px;
+}
+
+.menuButton {
+  display: none;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.iconButton,
+.avatarButton {
+  display: grid;
+  height: 38px;
+  width: 38px;
+  place-items: center;
+  border: 1px solid var(--fynix-border);
+  border-radius: 999px;
+  background: var(--fynix-surface);
+  color: var(--fynix-muted);
+}
+
+.avatarButton {
+  background: var(--fynix-accent-muted);
+  color: var(--fynix-accent-dark);
+}
+
+@media (max-width: 860px) {
+  .header {
+    position: relative;
+    z-index: 80;
+    padding: 12px 18px;
+  }
+
+  .menuButton {
+    display: grid;
+    flex-shrink: 0;
+    height: 38px;
+    width: 38px;
+    place-items: center;
+    border: 1px solid var(--fynix-border);
+    border-radius: 999px;
+    background: var(--fynix-surface);
+    color: var(--fynix-text);
+  }
+
+  .searchWrap {
+    max-width: none;
+  }
+}

@@ -1,0 +1,219 @@
+.sidebar {
+  position: sticky;
+  top: 18px;
+  display: flex;
+  height: calc(100vh - 36px);
+  width: 248px;
+  flex-direction: column;
+  gap: 18px;
+  margin: 18px 0 18px 18px;
+  border: 1px solid color-mix(in srgb, var(--fynix-border) 76%, #ffffff);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--fynix-surface) 96%, var(--fynix-bg));
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+  padding: 14px;
+}
+
+.mobileBackdrop {
+  display: none;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 2px 2px 8px;
+}
+
+.brandMark {
+  display: grid;
+  height: 32px;
+  width: 32px;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--fynix-accent);
+  color: #ffffff;
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--fynix-accent) 24%, transparent);
+}
+
+.brandName {
+  color: var(--fynix-text);
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.brandSub {
+  color: var(--fynix-muted);
+  font-size: 0.72rem;
+}
+
+.nav {
+  display: grid;
+  gap: 4px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.navSection {
+  display: grid;
+  gap: 3px;
+}
+
+.topLink {
+  display: flex;
+  align-items: center;
+  border-radius: 9px;
+  color: var(--fynix-muted);
+  padding: 8px 9px;
+  text-decoration: none;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.topLink span {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.topLink:hover {
+  background: var(--fynix-hover);
+  color: var(--fynix-text);
+}
+
+.sectionTrigger {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--fynix-muted);
+  padding: 8px 9px;
+  text-align: left;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.sectionTrigger span {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+
+.sectionTrigger:hover,
+.sectionTriggerActive {
+  background: var(--fynix-hover);
+  color: var(--fynix-text);
+}
+
+.sectionTrigger > svg {
+  color: inherit;
+  transition: transform 160ms ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.sectionLinks {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  margin: 2px 0 7px 17px;
+  padding-left: 12px;
+}
+
+.sectionLinks::before {
+  content: "";
+  position: absolute;
+  bottom: 6px;
+  left: 0;
+  top: 6px;
+  width: 1px;
+  background: var(--fynix-border);
+}
+
+.link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border-radius: 8px;
+  color: var(--fynix-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 7px 9px;
+  text-decoration: none;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.link svg {
+  color: #94a3b8;
+  stroke-width: 2.1;
+}
+
+.link:hover {
+  background: var(--fynix-hover);
+  color: var(--fynix-text);
+}
+
+.active {
+  background: color-mix(in srgb, var(--fynix-accent-muted) 72%, #ffffff);
+  color: var(--fynix-text);
+  font-weight: 750;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fynix-accent) 12%, transparent);
+}
+
+.active svg {
+  color: var(--fynix-accent-dark);
+}
+
+@media (max-width: 860px) {
+  .mobileBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: block;
+    border: 0;
+    background: rgba(15, 23, 42, 0.28);
+    padding: 0;
+  }
+
+  .sidebar {
+    position: fixed;
+    bottom: 12px;
+    left: 12px;
+    top: 12px;
+    z-index: 100;
+    height: auto;
+    width: min(318px, calc(100vw - 24px));
+    margin: 0;
+    overflow-y: auto;
+    pointer-events: none;
+    transform: translateX(calc(-100% - 28px));
+    transition: transform 180ms ease;
+  }
+
+  .sidebarOpen {
+    pointer-events: auto;
+    transform: translateX(0);
+  }
+
+  .nav {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionLinks {
+    grid-template-columns: 1fr;
+  }
+}

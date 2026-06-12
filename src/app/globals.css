@@ -1,0 +1,339 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+:root {
+  --fynix-bg: #f9fafb;
+  --fynix-surface: #ffffff;
+  --fynix-sidebar: #f9fafb;
+  --fynix-text: #111827;
+  --fynix-muted: #6b7280;
+  --fynix-border: #e5e7eb;
+  --fynix-hover: #f3f4f6;
+  --fynix-accent: #10b981;
+  --fynix-accent-dark: #059669;
+  --fynix-accent-light: #d1fae5;
+  --fynix-accent-muted: #ecfdf5;
+  --fynix-success: #d1fae5;
+  --fynix-warning: #fef3c7;
+  --fynix-danger: #fee2e2;
+  --fynix-radius: 14px;
+  --fynix-radius-lg: 16px;
+  --shadow-soft: 0 4px 24px rgba(15, 23, 42, 0.06);
+  --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.08);
+
+  --background: var(--fynix-bg);
+  --foreground: var(--fynix-text);
+  --card: var(--fynix-surface);
+  --card-foreground: var(--fynix-text);
+  --popover: var(--fynix-surface);
+  --popover-foreground: var(--fynix-text);
+  --primary: var(--fynix-accent);
+  --primary-foreground: #ffffff;
+  --secondary: var(--fynix-hover);
+  --secondary-foreground: var(--fynix-text);
+  --muted: var(--fynix-hover);
+  --muted-foreground: var(--fynix-muted);
+  --accent: var(--fynix-accent-muted);
+  --accent-foreground: var(--fynix-accent-dark);
+  --destructive: var(--fynix-danger);
+  --destructive-foreground: #b91c1c;
+  --border: var(--fynix-border);
+  --input: var(--fynix-border);
+  --ring: var(--fynix-accent);
+  --radius: var(--fynix-radius);
+  --sidebar-background: var(--fynix-sidebar);
+  --sidebar: var(--sidebar-background);
+  --sidebar-foreground: var(--fynix-text);
+  --sidebar-primary: var(--fynix-accent);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--fynix-accent-muted);
+  --sidebar-accent-foreground: var(--fynix-accent-dark);
+  --sidebar-border: var(--fynix-border);
+  --sidebar-ring: var(--fynix-accent);
+  --chart-1: var(--fynix-accent);
+  --chart-2: var(--fynix-accent-dark);
+  --chart-3: var(--fynix-accent-light);
+  --chart-4: var(--fynix-warning);
+  --chart-5: var(--fynix-danger);
+
+  /* Legacy aliases for gradual migration */
+  --notion-bg: var(--fynix-bg);
+  --notion-sidebar: var(--fynix-sidebar);
+  --notion-card: var(--fynix-surface);
+  --notion-text: var(--fynix-text);
+  --notion-muted: var(--fynix-muted);
+  --notion-border: var(--fynix-border);
+  --notion-hover: var(--fynix-hover);
+  --notion-success: var(--fynix-success);
+  --notion-warning: var(--fynix-warning);
+  --notion-danger: var(--fynix-danger);
+  --notion-accent: var(--fynix-accent-muted);
+}
+
+.dark {
+  --fynix-bg: #0f172a;
+  --fynix-surface: #111827;
+  --fynix-sidebar: #0f172a;
+  --fynix-text: #f9fafb;
+  --fynix-muted: #94a3b8;
+  --fynix-border: #1f2937;
+  --fynix-hover: #1f2937;
+  --fynix-accent: #34d399;
+  --fynix-accent-dark: #10b981;
+  --fynix-accent-light: #064e3b;
+  --fynix-accent-muted: #052e2b;
+  --fynix-success: #052e2b;
+  --fynix-warning: #78350f;
+  --fynix-danger: #7f1d1d;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@custom-variant dark (&:is(.dark *));
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--background);
+  color-scheme: light;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply font-sans;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-main {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.app-content {
+  min-width: 0;
+  flex: 1;
+  padding: 24px 28px 32px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--fynix-hover);
+  color: var(--fynix-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+}
+
+.badge-success {
+  background: var(--fynix-success);
+  color: #047857;
+}
+
+.badge-warning {
+  background: var(--fynix-warning);
+  color: #b45309;
+}
+
+.badge-danger {
+  background: var(--fynix-danger);
+  color: #b91c1c;
+}
+
+.amount-positive {
+  color: #059669;
+  font-weight: 600;
+}
+
+.amount-negative {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.fynixToastHost {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.fynixToast {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: min(380px, calc(100vw - 32px));
+  border: 1px solid color-mix(in srgb, var(--fynix-border) 82%, #ffffff);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--fynix-surface) 96%, var(--fynix-bg));
+  color: var(--fynix-text);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+  opacity: 0;
+  padding: 12px;
+  transform: translateY(-8px) scale(0.98);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.fynixToast--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.fynixToast__icon {
+  display: grid;
+  height: 34px;
+  width: 34px;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--fynix-accent-muted);
+  color: var(--fynix-accent-dark);
+}
+
+.fynixToast--error .fynixToast__icon {
+  background: var(--fynix-danger);
+  color: #b91c1c;
+}
+
+.fynixToast--info .fynixToast__icon {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.fynixToast--loading .fynixToast__icon {
+  background: var(--fynix-hover);
+  color: var(--fynix-muted);
+}
+
+.fynixToast__spinner {
+  animation: fynixToastSpin 0.8s linear infinite;
+}
+
+.fynixToast__content {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.fynixToast__content strong {
+  color: var(--fynix-text);
+  font-size: 0.88rem;
+  line-height: 1.25;
+}
+
+.fynixToast__content span {
+  color: var(--fynix-muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.fynixToast__close {
+  display: grid;
+  height: 26px;
+  width: 26px;
+  place-items: center;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--fynix-muted);
+}
+
+.fynixToast__close:hover {
+  background: var(--fynix-hover);
+  color: var(--fynix-text);
+}
+
+@keyframes fynixToastSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 860px) {
+  .app-shell {
+    flex-direction: column;
+  }
+
+  .app-content {
+    padding: 16px 18px 24px;
+  }
+}

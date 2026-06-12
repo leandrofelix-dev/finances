@@ -1,0 +1,340 @@
+.topRow {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.1fr) minmax(0, 1.4fr) minmax(220px, 0.7fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.middleRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.9fr);
+  gap: 16px;
+}
+
+.bottomRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.8fr);
+  gap: 16px;
+}
+
+.secondaryRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.card {
+  border: 1px solid var(--fynix-border);
+  border-radius: var(--fynix-radius-lg);
+  background: var(--fynix-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 18px 20px 0;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.cardMeta {
+  color: var(--fynix-muted);
+  font-size: 0.8rem;
+}
+
+.cardBody {
+  padding: 16px 20px 20px;
+}
+
+.balanceHero {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 200px;
+  border-radius: var(--fynix-radius-lg);
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  padding: 24px;
+  box-shadow: 0 12px 32px rgba(16, 185, 129, 0.28);
+}
+
+.balanceLabel {
+  font-size: 0.88rem;
+  opacity: 0.9;
+}
+
+.balanceValue {
+  margin-top: 8px;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.balanceHint {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  opacity: 0.85;
+}
+
+.balanceActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.balanceButton,
+.balanceButtonOutline {
+  border: 0;
+  border-radius: 10px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  padding: 10px 16px;
+}
+
+.balanceButton {
+  background: #ffffff;
+  color: var(--fynix-accent-dark);
+}
+
+.balanceButtonOutline {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.metricGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  height: 100%;
+}
+
+.metricCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid var(--fynix-border);
+  border-radius: var(--fynix-radius);
+  background: var(--fynix-surface);
+  padding: 16px;
+  box-shadow: var(--shadow-card);
+}
+
+.metricLabel {
+  color: var(--fynix-muted);
+  font-size: 0.8rem;
+}
+
+.metricValue {
+  margin-top: 8px;
+  font-size: 1.35rem;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+}
+
+.metricTrend {
+  margin-top: 6px;
+  color: var(--fynix-accent-dark);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.financeScore {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  height: 100%;
+  padding: 20px;
+}
+
+.scoreLabel {
+  color: var(--fynix-muted);
+  font-size: 0.82rem;
+}
+
+.scoreValue {
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.scoreBar {
+  overflow: hidden;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--fynix-hover);
+}
+
+.scoreBarFill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--fynix-accent), var(--fynix-accent-dark));
+}
+
+.scoreHint {
+  color: var(--fynix-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.chartWrap {
+  height: 280px;
+}
+
+.advisor {
+  display: grid;
+  gap: 14px;
+  height: 100%;
+}
+
+.advisorTitle {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.advisorText {
+  margin: 0;
+  color: var(--fynix-muted);
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+
+.advisorActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.advisorButton {
+  border: 1px solid var(--fynix-border);
+  border-radius: 999px;
+  background: var(--fynix-bg);
+  color: var(--fynix-text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 8px 14px;
+}
+
+.advisorButton:hover {
+  border-color: var(--fynix-accent);
+  background: var(--fynix-accent-muted);
+  color: var(--fynix-accent-dark);
+}
+
+.advisorHighlight {
+  border-radius: var(--fynix-radius);
+  background: var(--fynix-accent-muted);
+  color: var(--fynix-accent-dark);
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 12px 14px;
+}
+
+.donutWrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.donutChart {
+  height: 220px;
+  flex: 1;
+  min-width: 0;
+}
+
+.legend {
+  display: grid;
+  gap: 8px;
+  min-width: 140px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fynix-muted);
+  font-size: 0.8rem;
+}
+
+.legendDot {
+  height: 10px;
+  width: 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.fynixTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.fynixTable th,
+.fynixTable td {
+  border-bottom: 1px solid var(--fynix-border);
+  padding: 12px 0;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.fynixTable th {
+  color: var(--fynix-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.fynixTable tbody tr:hover {
+  background: color-mix(in srgb, var(--fynix-hover) 60%, transparent);
+}
+
+.fynixTable tr:last-child td {
+  border-bottom: 0;
+}
+
+.txName {
+  font-weight: 600;
+}
+
+.txSub {
+  display: block;
+  margin-top: 2px;
+  color: var(--fynix-muted);
+  font-size: 0.76rem;
+}
+
+.empty {
+  color: var(--fynix-muted);
+  font-size: 0.86rem;
+  padding: 8px 0;
+}
+
+@media (max-width: 1180px) {
+  .topRow,
+  .middleRow,
+  .bottomRow,
+  .secondaryRow {
+    grid-template-columns: 1fr;
+  }
+
+  .metricGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .metricGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .donutWrap {
+    flex-direction: column;
+  }
+}
