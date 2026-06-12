@@ -13,15 +13,16 @@ export function TableActions({
   return (
     <div className="flex flex-nowrap items-center justify-end gap-1">
       {onEdit ? (
-        <IconButton className="size-7" label="Editar" onClick={onEdit}>
+        <IconButton className="size-7" label="Editar" onClick={onEdit} variant="secondary">
           <Pencil size={14} />
         </IconButton>
       ) : null}
       {onDelete ? (
         <IconButton
-          className="size-7 border-red-200 text-red-400 hover:border-red-300 hover:bg-red-50 hover:text-red-500"
+          className="size-7"
           label="Excluir"
           onClick={onDelete}
+          variant="danger"
         >
           <Trash2 size={14} />
         </IconButton>

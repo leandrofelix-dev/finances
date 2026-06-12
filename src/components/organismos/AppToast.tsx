@@ -2,6 +2,7 @@
 
 import { AlertCircle, CheckCircle2, Info, Loader2, X } from "lucide-react";
 import { toast, Toaster, type Toast } from "react-hot-toast";
+import { Button } from "@/components/atoms/Button";
 
 type ToastKind = "success" | "error" | "loading" | "info";
 
@@ -42,9 +43,9 @@ function ToastCard({
         {description ? <span>{description}</span> : null}
       </div>
       {type !== "loading" ? (
-        <button aria-label="Fechar notificação" className="fynixToast__close" onClick={() => toast.dismiss(toastInstance.id)} type="button">
+        <Button aria-label="Fechar notificação" className="fynixToast__close" onClick={() => toast.dismiss(toastInstance.id)} size="icon" type="button" variant="secondary">
           <X size={14} />
-        </button>
+        </Button>
       ) : null}
     </div>
   );

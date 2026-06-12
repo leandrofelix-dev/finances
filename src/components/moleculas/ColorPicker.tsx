@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/atoms/Button";
 import { Field, StyledInput } from "@/components/moleculas/FormControls";
 
 export function ColorPicker({
@@ -49,7 +50,7 @@ export function ColorPicker({
         </label>
         <div className="grid grid-cols-6 gap-2" aria-label="Cores sugeridas">
           {options.map((color) => (
-            <button
+            <Button
               className={cn(
                 "h-8 rounded-[10px] border-2 border-white transition-transform hover:-translate-y-px hover:shadow-[0_0_0_2px_var(--fynix-accent)]",
                 selectedColor === color

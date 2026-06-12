@@ -32,7 +32,7 @@ import { Button } from "@/components/atoms/Button";
 import { BalanceHero } from "@/components/organismos/dashboard/BalanceHero";
 import { CashflowChart, type CashflowPoint } from "@/components/organismos/dashboard/CashflowChart";
 import { CategoryDonut } from "@/components/organismos/dashboard/CategoryDonut";
-import { computeFinanceScore, FinanceScore } from "@/components/organismos/dashboard/FinanceScore";
+import { computeFinanceScore } from "@/components/organismos/dashboard/FinanceScore";
 import { MetricCards } from "@/components/organismos/dashboard/MetricCards";
 import { RecentTransactionsTable } from "@/components/organismos/dashboard/RecentTransactionsTable";
 import { dismissToast, notify } from "@/components/organismos/AppToast";
@@ -203,6 +203,7 @@ type Advice = {
   healthyDailySpend: number;
   totals: {
     spendableIncome: number;
+    incomeToDate: number;
     fixedProjected: number;
     installmentProjected: number;
     debtProjected: number;
@@ -828,7 +829,7 @@ export function FinanceDashboard({ initialTab = "overview" }: { initialTab?: Tab
       <div className={styles.pageHeader}>
         <div>
           <div className={styles.eyebrow}>{activeTab === "overview" ? "Dashboard" : activeTabLabel}</div>
-          <h1 className={styles.title}>{activeTab === "overview" ? "Visão geral financeira" : activeTabLabel}</h1>
+          <h1 className={styles.title}>{activeTab === "overview" ? "Visão geral" : activeTabLabel}</h1>
         </div>
       </div>
 
@@ -848,10 +849,10 @@ export function FinanceDashboard({ initialTab = "overview" }: { initialTab?: Tab
           />
           <MetricCards
             expense={totals.outflowToDate}
-            income={totals.spendableIncome}
+            financeScore={financeScore}
+            income={totals.incomeToDate}
             projected={totals.projectedMonthEnd}
           />
-          <FinanceScore {...financeScore} />
         </section>
       ) : null}
 
@@ -1265,7 +1266,7 @@ function CategoryForm(props: {
             const Icon = option.icon;
             const isSelected = selectedIcon === option.name;
             return (
-              <button
+              <Button
                 aria-checked={isSelected}
                 className={`${styles.iconOption} ${isSelected ? styles.iconOptionActive : ""}`}
                 key={option.name}
@@ -1273,9 +1274,10 @@ function CategoryForm(props: {
                 role="radio"
                 type="button"
                 title={option.label}
+                variant="secondary"
               >
                 <Icon size={20} />
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -1914,14 +1916,15 @@ function FixedExpensesTable({
                 <ExpenseRecurrenceTag expense={expense} />
               </TextCell>
               <TableCell>
-                <button
+                <Button
                   className={`${styles.paymentToggle} ${isPaid ? styles.paymentTogglePaid : ""}`}
                   onClick={() => onTogglePaid(expense)}
                   type="button"
+                  variant={isPaid ? "secondary" : "alert"}
                 >
                   <CheckCircle2 size={14} />
                   {isPaid ? "Pago" : "Pendente"}
-                </button>
+                </Button>
               </TableCell>
               <ActionsCell onDelete={() => onDelete(expense.id)} onEdit={() => onEdit(expense)} />
             </TableRow>

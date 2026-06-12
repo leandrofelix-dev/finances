@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BarChart3, ChartPie, Tags } from "lucide-react";
 
 import { Button } from "@/components/atoms/Button";
 import { Card, CardContent } from "@/components/atoms/card";
@@ -34,15 +35,15 @@ export function AdvisorPanel({
         </div>
         <div className="flex flex-wrap gap-2">
           <Button onClick={onShowCategories} type="button" variant="secondary">
+            <Tags size={16} />
             Ver metas por categoria
           </Button>
-          <Link
-            className="inline-flex h-8 items-center justify-center rounded-lg border border-border bg-background px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-            href="/projections"
-          >
+          <Button render={<Link href="/projections" />} variant="secondary">
+            <BarChart3 size={16} />
             Ir para projeções
-          </Link>
+          </Button>
           <Button onClick={onShowCashflow} type="button" variant="secondary">
+            <ChartPie size={16} />
             Ver fluxo de caixa
           </Button>
         </div>

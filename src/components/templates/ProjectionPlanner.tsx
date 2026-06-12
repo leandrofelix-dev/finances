@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/atoms/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/atoms/card";
 import { DateInput } from "@/components/moleculas/FormControls";
@@ -106,7 +107,10 @@ export function ProjectionPlanner() {
             onChange={(event) => setTargetDate(event.target.value)}
             value={targetDate}
           />
-          <Button type="submit">Recalcular</Button>
+          <Button type="submit">
+            <RefreshCw size={16} />
+            Recalcular
+          </Button>
         </form>
       </section>
 

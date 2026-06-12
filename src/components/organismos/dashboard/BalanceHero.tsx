@@ -1,3 +1,5 @@
+import { ArrowDownCircle, ShoppingCart } from "lucide-react";
+import { Button } from "@/components/atoms/Button";
 import styles from "./dashboard.module.css";
 
 const currency = new Intl.NumberFormat("pt-BR", {
@@ -23,12 +25,14 @@ export function BalanceHero({ balance, projectedMonthEnd, onDeposit, onSend }: B
         </div>
       </div>
       <div className={styles.balanceActions}>
-        <button className={styles.balanceButton} onClick={onDeposit} type="button">
+        <Button className="border-white bg-white text-primary hover:bg-white/90 hover:text-primary" onClick={onDeposit} type="button" variant="secondary">
+          <ArrowDownCircle size={16} />
           Registrar entrada
-        </button>
-        <button className={styles.balanceButtonOutline} onClick={onSend} type="button">
+        </Button>
+        <Button className="bg-white/15 text-white hover:bg-white/25 hover:text-white" onClick={onSend} type="button" variant="secondary">
+          <ShoppingCart size={16} />
           Registrar compra
-        </button>
+        </Button>
       </div>
     </article>
   );

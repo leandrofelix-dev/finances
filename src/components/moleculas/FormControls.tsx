@@ -1,7 +1,7 @@
 "use client";
 
 import { Children, isValidElement, useMemo, useState, type InputHTMLAttributes, type ReactElement, type ReactNode } from "react";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Plus, Save, XCircle } from "lucide-react";
 
 import { Button } from "@/components/atoms/Button";
 import { Button as ShadButton } from "@/components/atoms/base-button";
@@ -278,9 +278,13 @@ export function PercentInput(props: AdornedNumberInputProps) {
 export function FormActions({ editing, onCancel }: { editing: boolean; onCancel: () => void }) {
   return (
     <Actions>
-      <Button type="submit">{editing ? "Atualizar" : "Cadastrar"}</Button>
+      <Button type="submit">
+        {editing ? <Save size={16} /> : <Plus size={16} />}
+        {editing ? "Atualizar" : "Cadastrar"}
+      </Button>
       {editing ? (
         <Button onClick={onCancel} type="button" variant="secondary">
+          <XCircle size={16} />
           Cancelar edição
         </Button>
       ) : null}

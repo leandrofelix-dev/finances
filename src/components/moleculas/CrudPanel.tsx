@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { FilterX, Plus } from "lucide-react";
 
 import { Card } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/Button";
@@ -32,7 +33,10 @@ export function CrudPanel({
           <h2 className="m-0 text-base font-bold text-foreground">{title}</h2>
           <span className="text-sm text-muted-foreground">busque, filtre e gerencie os registros</span>
         </div>
-        <Button onClick={onCreate}>Cadastrar</Button>
+        <Button onClick={onCreate}>
+          <Plus size={16} />
+          Cadastrar
+        </Button>
       </div>
 
       <form className="grid gap-3 border-b border-border bg-muted/30 px-5 py-4" onSubmit={(event) => event.preventDefault()}>
@@ -40,6 +44,7 @@ export function CrudPanel({
           <h3 className="m-0 text-sm font-semibold text-foreground">Busca e filtros</h3>
           {hasActiveFilters ? (
             <Button onClick={onClear} type="button" variant="secondary">
+              <FilterX size={16} />
               Limpar filtros
             </Button>
           ) : null}

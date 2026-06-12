@@ -146,7 +146,6 @@ function NavSection({
 function SidebarContent({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     creditCards: true,
-    reports: true,
     outcome: true,
   });
 
@@ -194,17 +193,6 @@ function SidebarContent({ pathname, onNavigate }: { pathname: string; onNavigate
           onNavigate={onNavigate}
           onToggle={toggleSection}
           open={openSections.creditCards}
-          pathname={pathname}
-        />
-
-        <NavSection
-          icon={BarChart3}
-          id="reports"
-          label="Relatórios"
-          links={mainLinks}
-          onNavigate={onNavigate}
-          onToggle={toggleSection}
-          open={openSections.reports}
           pathname={pathname}
         />
 

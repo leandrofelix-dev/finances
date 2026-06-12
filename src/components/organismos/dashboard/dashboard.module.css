@@ -1,6 +1,6 @@
 .topRow {
   display: grid;
-  grid-template-columns: minmax(280px, 1.1fr) minmax(0, 1.4fr) minmax(220px, 0.7fr);
+  grid-template-columns: minmax(280px, 0.8fr) minmax(0, 2.2fr);
   gap: 16px;
   align-items: stretch;
 }
@@ -9,6 +9,10 @@
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.9fr);
   gap: 16px;
+}
+
+.middleRow > :only-child {
+  grid-column: 1 / -1;
 }
 
 .bottomRow {
@@ -85,8 +89,13 @@
 
 .balanceActions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-top: 20px;
+}
+
+.balanceActions > * {
+  flex: 1 1 140px;
 }
 
 .balanceButton,

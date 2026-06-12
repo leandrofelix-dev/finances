@@ -1,14 +1,16 @@
 "use client";
 
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { Loader2 } from "lucide-react";
 
 import { Button as ShadButton } from "./base-button";
 import { cn } from "@/lib/utils";
 
-type ButtonVariant = "primary" | "secondary" | "danger";
+type ButtonVariant = "primary" | "secondary" | "danger" | "alert" | "loading";
 type ButtonSize = "default" | "sm" | "lg" | "icon";
 
 type ButtonProps = Omit<React.ComponentProps<typeof ShadButton>, "size" | "variant"> & {
+  loading?: boolean;
   variant?: ButtonVariant;
   size?: ButtonSize;
 };
@@ -17,6 +19,8 @@ const variantMap: Record<ButtonVariant, React.ComponentProps<typeof ShadButton>[
   primary: "default",
   secondary: "outline",
   danger: "destructive",
+  alert: "alert",
+  loading: "loading",
 };
 
 const sizeMap: Record<ButtonSize, React.ComponentProps<typeof ShadButton>["size"]> = {
@@ -27,12 +31,28 @@ const sizeMap: Record<ButtonSize, React.ComponentProps<typeof ShadButton>["size"
 };
 
 export function Button({
+  children,
   className,
+  disabled,
+  loading,
   variant = "primary",
   size = "default",
   ...props
 }: ButtonProps) {
-  return <ShadButton className={className} size={sizeMap[size]} variant={variantMap[variant]} {...props} />;
+  const isLoading = loading || variant === "loading";
+
+  return (
+    <ShadButton
+      className={className}
+      disabled={disabled || isLoading}
+      size={sizeMap[size]}
+      variant={variantMap[isLoading ? "loading" : variant]}
+      {...props}
+    >
+      {isLoading ? <Loader2 className="animate-spin" size={15} /> : null}
+      {children}
+    </ShadButton>
+  );
 }
 
 export function IconButton({
@@ -40,18 +60,23 @@ export function IconButton({
   label,
   title,
   className,
+  variant = "secondary",
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode; label: string }) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  children: ReactNode;
+  label: string;
+  variant?: Exclude<ButtonVariant, "loading">;
+}) {
   return (
     <ShadButton
       aria-label={label}
       className={cn(
-        "size-8 border-border bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+        "size-8",
         className
       )}
       size="icon"
       title={title ?? label}
-      variant="outline"
+      variant={variantMap[variant]}
       {...props}
     >
       {children}
