@@ -16,6 +16,7 @@ export async function GET() {
       daysRemaining: snapshot.daysRemaining,
       totals: {
         spendableIncome: snapshot.spendableIncome,
+        incomeToDate: snapshot.incomeToDate,
         fixedProjected: snapshot.fixedProjected,
         installmentProjected: snapshot.installmentProjected,
         remainingInstallment: snapshot.remainingInstallment,

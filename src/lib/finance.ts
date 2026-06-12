@@ -447,6 +447,7 @@ export async function getFinancialSnapshot(referenceDate = new Date()) {
     month,
     daysRemaining,
     spendableIncome,
+    incomeToDate: incomeToDate + inflowTransactionsToDate,
     fixedProjected,
     fixedPaid,
     fixedRemaining,
