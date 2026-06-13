@@ -328,12 +328,12 @@ button {
   }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 767px) {
   .app-shell {
     flex-direction: column;
   }
 
   .app-content {
-    padding: 16px 18px 24px;
+    padding: 16px 18px calc(5.5rem + env(safe-area-inset-bottom));
   }
 }

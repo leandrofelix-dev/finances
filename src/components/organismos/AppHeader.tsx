@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, Menu, Search, X } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 import { Button } from "@/components/atoms/Button";
 import {
   CommandDialog,
@@ -12,14 +12,13 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/atoms/command";
+import { UserAvatarButton } from "@/components/organismos/UserAvatarButton";
 import { useDashboardNavigation, type SearchItem } from "@/context/DashboardNavigationContext";
-import { useMobileNav } from "@/context/MobileNavContext";
 import { hrefForTab } from "@/lib/navigation";
 
 export function AppHeader() {
   const router = useRouter();
   const navigation = useDashboardNavigation();
-  const { isOpen: isMobileNavOpen, toggle: toggleMobileNav } = useMobileNav();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [results, setResults] = useState<SearchItem[]>([]);
@@ -84,18 +83,7 @@ export function AppHeader() {
   }
 
   return (
-    <header className="flex items-center gap-3 border-b border-border bg-background px-4 py-3 md:px-7">
-      <Button
-        aria-expanded={isMobileNavOpen}
-        aria-label={isMobileNavOpen ? "Fechar menu" : "Abrir menu"}
-        className="md:hidden"
-        onClick={toggleMobileNav}
-        size="icon"
-        variant="secondary"
-      >
-        {isMobileNavOpen ? <X size={18} /> : <Menu size={18} />}
-      </Button>
-
+    <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-background/95 px-4 py-3 backdrop-blur supports-backdrop-filter:bg-background/80 md:px-7">
       <div className="relative flex min-w-0 flex-1 items-center gap-2">
         <Search className="pointer-events-none absolute left-3 text-muted-foreground" size={18} />
         <Button
@@ -104,7 +92,7 @@ export function AppHeader() {
           type="button"
           variant="secondary"
         >
-          Buscar transações, categorias...
+          <span className="truncate">Buscar transações, categorias...</span>
         </Button>
       </div>
 
@@ -112,6 +100,7 @@ export function AppHeader() {
         <Button aria-label="Dívidas pendentes" onClick={() => goToTab("debts")} size="icon" variant="secondary">
           <Bell size={18} />
         </Button>
+        <UserAvatarButton />
       </div>
 
       <CommandDialog

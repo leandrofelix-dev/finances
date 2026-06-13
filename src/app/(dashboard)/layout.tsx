@@ -1,7 +1,7 @@
 import { AppHeader } from "@/components/organismos/AppHeader";
+import { BottomDock } from "@/components/organismos/BottomDock";
 import { Sidebar } from "@/components/organismos/Sidebar";
 import { DashboardNavigationProvider } from "@/context/DashboardNavigationContext";
-import { MobileNavProvider } from "@/context/MobileNavContext";
 
 export default function DashboardLayout({
   children,
@@ -10,15 +10,14 @@ export default function DashboardLayout({
 }>) {
   return (
     <DashboardNavigationProvider>
-      <MobileNavProvider>
-        <div className="app-shell">
-          <Sidebar />
-          <div className="app-main">
-            <AppHeader />
-            <main className="app-content">{children}</main>
-          </div>
+      <div className="app-shell">
+        <Sidebar />
+        <div className="app-main">
+          <AppHeader />
+          <main className="app-content">{children}</main>
         </div>
-      </MobileNavProvider>
+        <BottomDock />
+      </div>
     </DashboardNavigationProvider>
   );
 }
