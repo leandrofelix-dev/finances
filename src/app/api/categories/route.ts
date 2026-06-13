@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUser } from "@/lib/get-session";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const categories = await prisma.category.findMany({
+      where: { userId: user.id },
       orderBy: { name: "asc" },
     });
     return NextResponse.json(categories);
@@ -22,8 +27,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const category = await prisma.category.create({
       data: {
+        userId: user.id,
         name,
         color,
         icon,

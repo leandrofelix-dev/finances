@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUser } from "@/lib/get-session";
 
 export async function PUT(
   request: Request,
@@ -14,8 +15,11 @@ export async function PUT(
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const invoice = await prisma.cardInvoice.update({
-      where: { id },
+      where: { id, userId: user.id },
       data: {
         cardId,
         month: parseInt(month),
@@ -38,8 +42,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const { id } = await params;
-    await prisma.cardInvoice.delete({ where: { id } });
+
+    await prisma.cardInvoice.delete({ where: { id, userId: user.id } });
 
     return NextResponse.json({ success: true });
   } catch (error) {

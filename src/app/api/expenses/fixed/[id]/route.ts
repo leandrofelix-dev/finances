@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { buildFixedExpenseData } from "@/lib/fixed-expense";
 import { prisma } from "@/lib/prisma";
+import { getSessionUser } from "@/lib/get-session";
 
 export async function PUT(
   request: Request,
@@ -11,8 +12,11 @@ export async function PUT(
     const body = await request.json();
     const data = buildFixedExpenseData(body);
 
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const fixedExpense = await prisma.fixedExpense.update({
-      where: { id },
+      where: { id, userId: user.id },
       data,
     });
 
@@ -32,8 +36,11 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     await prisma.fixedExpense.delete({
-      where: { id },
+      where: { id, userId: user.id },
     });
     return NextResponse.json({ success: true });
   } catch (error) {

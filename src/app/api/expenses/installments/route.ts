@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUser } from "@/lib/get-session";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const installments = await prisma.installment.findMany({
+      where: { userId: user.id },
       orderBy: { startDate: "desc" },
       include: {
         card: true,
@@ -31,8 +36,12 @@ export async function POST(request: Request) {
     const curInstallment = currentInstallment !== undefined && currentInstallment !== "" ? parseInt(currentInstallment) : 1;
     const amtPerInstallment = tAmount / tInstallments;
 
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const installment = await prisma.installment.create({
       data: {
+        userId: user.id,
         description,
         totalAmount: tAmount,
         totalInstallments: tInstallments,
@@ -50,6 +59,7 @@ export async function POST(request: Request) {
     const installmentName = `${description} (Parcela ${curInstallment}/${tInstallments})`;
     await prisma.transaction.create({
       data: {
+        userId: user.id,
         description: installmentName,
         amount: amtPerInstallment,
         type: "OUTFLOW",

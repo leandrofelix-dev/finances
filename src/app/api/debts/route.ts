@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUser } from "@/lib/get-session";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const debts = await prisma.debt.findMany({
+      where: { userId: user.id },
       include: { category: true },
       orderBy: [{ isPaid: "asc" }, { date: "asc" }],
     });
@@ -26,8 +31,12 @@ export async function POST(request: Request) {
 
     const recurring = isRecurring === true || isRecurring === "true";
 
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const debt = await prisma.debt.create({
       data: {
+        userId: user.id,
         description,
         amount: parseFloat(amount),
         isRecurring: recurring,

@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
 import { buildFixedExpenseData } from "@/lib/fixed-expense";
 import { prisma } from "@/lib/prisma";
+import { getSessionUser } from "@/lib/get-session";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const now = new Date();
     const fixedExpenses = await prisma.fixedExpense.findMany({
+      where: { userId: user.id },
       orderBy: { dueDay: "asc" },
       include: {
         category: true,
@@ -29,8 +34,14 @@ export async function POST(request: Request) {
     const body = await request.json();
     const data = buildFixedExpenseData(body);
 
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const fixedExpense = await prisma.fixedExpense.create({
-      data,
+      data: {
+        ...data,
+        userId: user.id,
+      },
     });
 
     return NextResponse.json(fixedExpense, { status: 201 });

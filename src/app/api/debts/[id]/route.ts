@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUser } from "@/lib/get-session";
 
 export async function PUT(
   request: Request,
@@ -16,8 +17,11 @@ export async function PUT(
 
     const recurring = isRecurring === true || isRecurring === "true";
 
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const debt = await prisma.debt.update({
-      where: { id },
+      where: { id, userId: user.id },
       data: {
         description,
         amount: parseFloat(amount),
@@ -43,8 +47,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const { id } = await params;
-    await prisma.debt.delete({ where: { id } });
+
+    await prisma.debt.delete({ where: { id, userId: user.id } });
 
     return NextResponse.json({ success: true });
   } catch (error) {

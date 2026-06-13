@@ -266,13 +266,14 @@ function fixedExpenseOccursOnDay(expense: FixedExpenseRecord, day: Date) {
   );
 }
 
-export async function getFinancialSnapshot(referenceDate = new Date()) {
+export async function getFinancialSnapshot(userId: string, referenceDate = new Date()) {
   const today = startOfDay(referenceDate);
   const month = getMonthRange(today);
   const [incomes, fixedExpenses, installments, transactions, categories, invoices, debts] =
     await Promise.all([
       prisma.income.findMany({
         where: {
+          userId,
           OR: [
             {
               isRecurring: true,
@@ -286,6 +287,7 @@ export async function getFinancialSnapshot(referenceDate = new Date()) {
       }),
       prisma.fixedExpense.findMany({
         where: {
+          userId,
           isActive: true,
           startDate: { lte: month.end },
           OR: [{ endDate: null }, { endDate: { gte: month.start } }],
@@ -302,22 +304,24 @@ export async function getFinancialSnapshot(referenceDate = new Date()) {
         orderBy: { dueDay: "asc" },
       }),
       prisma.installment.findMany({
+        where: { userId },
         include: { card: true, category: true },
         orderBy: { startDate: "asc" },
       }),
       prisma.transaction.findMany({
-        where: { date: { gte: month.start, lte: month.end } },
+        where: { userId, date: { gte: month.start, lte: month.end } },
         include: { category: true, card: true },
         orderBy: { date: "desc" },
       }),
-      prisma.category.findMany({ orderBy: { name: "asc" } }),
+      prisma.category.findMany({ where: { userId }, orderBy: { name: "asc" } }),
       prisma.cardInvoice.findMany({
-        where: { month: month.start.getMonth() + 1, year: month.start.getFullYear() },
+        where: { userId, month: month.start.getMonth() + 1, year: month.start.getFullYear() },
         include: { card: true },
         orderBy: { realAmount: "desc" },
       }),
       prisma.debt.findMany({
         where: {
+          userId,
           isPaid: false,
           OR: [
             { isRecurring: true, date: { lte: month.end }, OR: [{ endDate: null }, { endDate: { gte: month.start } }] },
@@ -528,15 +532,15 @@ function debtsForMonth(
     .reduce((sum, debt) => sum + debt.amount, 0);
 }
 
-export async function getMonthlyCashflow(months = 12, referenceDate = new Date()) {
+export async function getMonthlyCashflow(userId: string, months = 12, referenceDate = new Date()) {
   const today = startOfDay(referenceDate);
   const [incomes, fixedExpenses, installments, transactions, debts, invoices] = await Promise.all([
-    prisma.income.findMany({ orderBy: { date: "asc" } }),
-    prisma.fixedExpense.findMany({ where: { isActive: true }, include: { category: true, payments: true } }),
-    prisma.installment.findMany({ include: { card: true, category: true } }),
-    prisma.transaction.findMany({ orderBy: { date: "asc" } }),
-    prisma.debt.findMany({ where: { isPaid: false }, include: { category: true } }),
-    prisma.cardInvoice.findMany({ include: { card: true } }),
+    prisma.income.findMany({ where: { userId }, orderBy: { date: "asc" } }),
+    prisma.fixedExpense.findMany({ where: { userId, isActive: true }, include: { category: true, payments: true } }),
+    prisma.installment.findMany({ where: { userId }, include: { card: true, category: true } }),
+    prisma.transaction.findMany({ where: { userId }, orderBy: { date: "asc" } }),
+    prisma.debt.findMany({ where: { userId, isPaid: false }, include: { category: true } }),
+    prisma.cardInvoice.findMany({ where: { userId }, include: { card: true } }),
   ]);
 
   const formatter = new Intl.DateTimeFormat("pt-BR", { month: "short", year: "2-digit" });
@@ -574,25 +578,25 @@ export async function getMonthlyCashflow(months = 12, referenceDate = new Date()
   return points;
 }
 
-export async function buildProjection(targetDate: Date, referenceDate = new Date()) {
+export async function buildProjection(userId: string, targetDate: Date, referenceDate = new Date()) {
   const today = startOfDay(referenceDate);
   const end = startOfDay(targetDate);
   if (end < today) {
     throw new Error("Target date must be today or in the future");
   }
 
-  const snapshot = await getFinancialSnapshot(referenceDate);
+  const snapshot = await getFinancialSnapshot(userId, referenceDate);
   const monthStart = getMonthRange(today).start;
   const [incomes, fixedExpenses, installments, transactions, debts, invoices] = await Promise.all([
-    prisma.income.findMany({ orderBy: { date: "asc" } }),
-    prisma.fixedExpense.findMany({ where: { isActive: true }, include: { category: true, payments: true } }),
-    prisma.installment.findMany({ include: { card: true, category: true } }),
+    prisma.income.findMany({ where: { userId }, orderBy: { date: "asc" } }),
+    prisma.fixedExpense.findMany({ where: { userId, isActive: true }, include: { category: true, payments: true } }),
+    prisma.installment.findMany({ where: { userId }, include: { card: true, category: true } }),
     prisma.transaction.findMany({
-      where: { date: { gte: monthStart, lte: end } },
+      where: { userId, date: { gte: monthStart, lte: end } },
       include: { category: true, card: true },
     }),
-    prisma.debt.findMany({ where: { isPaid: false }, include: { category: true } }),
-    prisma.cardInvoice.findMany({ include: { card: true } }),
+    prisma.debt.findMany({ where: { userId, isPaid: false }, include: { category: true } }),
+    prisma.cardInvoice.findMany({ where: { userId }, include: { card: true } }),
   ]);
 
   let balance = snapshot.balanceNow;

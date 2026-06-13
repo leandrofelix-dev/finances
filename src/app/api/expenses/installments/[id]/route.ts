@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUser } from "@/lib/get-session";
 
 export async function PUT(
   request: Request,
@@ -19,8 +20,11 @@ export async function PUT(
     const curInstallment = currentInstallment !== undefined && currentInstallment !== "" ? parseInt(currentInstallment) : 1;
     const amtPerInstallment = tAmount / tInstallments;
 
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const installment = await prisma.installment.update({
-      where: { id },
+      where: { id, userId: user.id },
       data: {
         description,
         totalAmount: tAmount,
@@ -46,8 +50,11 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     await prisma.installment.delete({
-      where: { id },
+      where: { id, userId: user.id },
     });
     return NextResponse.json({ success: true });
   } catch (error) {

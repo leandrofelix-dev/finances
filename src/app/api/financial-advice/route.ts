@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { getFinancialSnapshot, getMonthlyCashflow } from "@/lib/finance";
+import { getSessionUser } from "@/lib/get-session";
 
 export async function GET() {
   try {
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const [snapshot, monthlyCashflow] = await Promise.all([
-      getFinancialSnapshot(),
-      getMonthlyCashflow(),
+      getFinancialSnapshot(user.id),
+      getMonthlyCashflow(user.id),
     ]);
 
     return NextResponse.json({

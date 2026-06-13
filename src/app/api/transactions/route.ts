@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUser } from "@/lib/get-session";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const transactions = await prisma.transaction.findMany({
+      where: { userId: user.id },
       orderBy: { date: "desc" },
       include: {
         category: true,
@@ -26,8 +31,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const transaction = await prisma.transaction.create({
       data: {
+        userId: user.id,
         description,
         amount: parseFloat(amount),
         date: new Date(date),

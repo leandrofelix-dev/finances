@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
 import { buildIncomeData } from "@/lib/income";
 import { prisma } from "@/lib/prisma";
+import { getSessionUser } from "@/lib/get-session";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const incomes = await prisma.income.findMany({
+      where: { userId: user.id },
       orderBy: { date: "desc" },
     });
     return NextResponse.json(incomes);
@@ -19,8 +24,14 @@ export async function POST(request: Request) {
     const body = await request.json();
     const data = buildIncomeData(body);
 
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const income = await prisma.income.create({
-      data,
+      data: {
+        ...data,
+        userId: user.id,
+      },
     });
 
     return NextResponse.json(income, { status: 201 });

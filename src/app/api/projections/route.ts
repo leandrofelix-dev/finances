@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buildProjection } from "@/lib/finance";
+import { getSessionUser } from "@/lib/get-session";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +11,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Invalid targetDate" }, { status: 400 });
     }
 
-    const projection = await buildProjection(targetDate);
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const projection = await buildProjection(user.id, targetDate);
     return NextResponse.json(projection);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Internal Server Error";

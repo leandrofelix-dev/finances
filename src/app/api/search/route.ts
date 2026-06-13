@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { hrefForTab, type DashboardTab } from "@/lib/navigation";
 import { prisma } from "@/lib/prisma";
+import { getSessionUser } from "@/lib/get-session";
 
 type SearchResult = {
   id: string;
@@ -16,6 +17,9 @@ function item(id: string, label: string, tab: DashboardTab, sublabel?: string): 
 
 export async function GET(request: Request) {
   try {
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const query = new URL(request.url).searchParams.get("q")?.trim().toLowerCase();
     if (!query) {
       return NextResponse.json([]);
@@ -34,46 +38,46 @@ export async function GET(request: Request) {
       debts,
     ] = await Promise.all([
       prisma.transaction.findMany({
-        where: { description: contains },
+        where: { description: contains, userId: user.id },
         take: 6,
         orderBy: { date: "desc" },
         include: { category: true },
       }),
       prisma.category.findMany({
-        where: { name: contains },
+        where: { name: contains, userId: user.id },
         take: 6,
         orderBy: { name: "asc" },
       }),
       prisma.income.findMany({
-        where: { description: contains },
+        where: { description: contains, userId: user.id },
         take: 6,
         orderBy: { date: "desc" },
       }),
       prisma.card.findMany({
-        where: { name: contains },
+        where: { name: contains, userId: user.id },
         take: 6,
         orderBy: { name: "asc" },
       }),
       prisma.fixedExpense.findMany({
-        where: { description: contains },
+        where: { description: contains, userId: user.id },
         take: 6,
         orderBy: { dueDay: "asc" },
         include: { category: true },
       }),
       prisma.installment.findMany({
-        where: { description: contains },
+        where: { description: contains, userId: user.id },
         take: 6,
         orderBy: { startDate: "desc" },
         include: { card: true },
       }),
       prisma.cardInvoice.findMany({
-        where: { card: { name: contains } },
+        where: { card: { name: contains }, userId: user.id },
         take: 6,
         orderBy: [{ year: "desc" }, { month: "desc" }],
         include: { card: true },
       }),
       prisma.debt.findMany({
-        where: { description: contains },
+        where: { description: contains, userId: user.id },
         take: 6,
         orderBy: { date: "desc" },
         include: { category: true },

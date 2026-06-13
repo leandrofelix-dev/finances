@@ -14,6 +14,7 @@ import {
   Settings2,
   ShoppingBag,
   WalletCards,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/atoms/Button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/atoms/sheet";
@@ -40,6 +41,7 @@ const creditCardLinks = [
 
 const managementLinks = [
   { href: "/categories", label: "Categorias", icon: Settings2 },
+  { href: "/profile", label: "Perfil", icon: User },
 ];
 
 function isLinkActive(pathname: string, href: string) {

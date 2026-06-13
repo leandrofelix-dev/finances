@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUser } from "@/lib/get-session";
 
 function toInt(value: unknown) {
   if (value === undefined || value === null || value === "") return null;
@@ -21,6 +22,14 @@ export async function PUT(
     if (month < 1 || month > 12 || year < 2000) {
       return NextResponse.json({ error: "Invalid payment period" }, { status: 400 });
     }
+
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const fixedExpense = await prisma.fixedExpense.findUnique({
+      where: { id, userId: user.id }
+    });
+    if (!fixedExpense) return NextResponse.json({ error: "Not Found" }, { status: 404 });
 
     const payment = await prisma.fixedExpensePayment.upsert({
       where: {

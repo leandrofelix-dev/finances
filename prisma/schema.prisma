@@ -13,45 +13,78 @@ enum InvoiceStatus {
   PAGA
 }
 
+// -------------------------------------------------
+// Usuário
+// -------------------------------------------------
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  // relações (opcional)
+  categories    Category[]
+  cards         Card[]
+  incomes       Income[]
+  fixedExpenses FixedExpense[]
+  debts         Debt[]
+  installments  Installment[]
+  transactions  Transaction[]
+  cardInvoices  CardInvoice[] @relation("UserCardInvoices")
+
+  @@map("user")
+}
+
 model Category {
-  id                   String         @id @default(uuid())
-  name                 String         @unique
-  color                String         // Hex or color name (e.g., "#FFD8D8", "blue", "gray")
-  icon                 String         // Lucide icon name (e.g., "ShoppingBag", "Utensils")
-  allocationPercentage Float?         // Target % of budget (e.g. 30.0 for 30%)
-  maxLimit             Float?         // Max budget in currency (e.g. 500)
+  id                   String   @id @default(uuid())
+  name                 String   @unique
+  color                String   // Hex or color name (e.g., "#FFD8D8", "blue", "gray")
+  icon                 String   // Lucide icon name (e.g., "ShoppingBag", "Utensils")
+  allocationPercentage Float?
+  maxLimit             Float?
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id])
   fixedExpenses        FixedExpense[]
   installments         Installment[]
   transactions         Transaction[]
   debts                Debt[]
-  createdAt            DateTime       @default(now())
-  updatedAt            DateTime       @updatedAt
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 }
 
 model Card {
-  id           String         @id @default(uuid())
+  id           String   @id @default(uuid())
   name         String
   limit        Float
-  closingDay   Int            // Day of month the invoice closes (e.g. 5)
-  dueDay       Int            // Day of month the invoice is due (e.g. 10)
-  color        String         // Hex or color name for the card visual representation
+  closingDay   Int      // Day of month the invoice closes (e.g. 5)
+  dueDay       Int      // Day of month the invoice is due (e.g. 10)
+  color        String   // Hex or color name for the card visual representation
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
   installments Installment[]
   invoices     CardInvoice[]
   transactions Transaction[]
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model CardInvoice {
-  id         String        @id @default(uuid())
+  id         String   @id @default(uuid())
   cardId     String
-  card       Card          @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  month      Int           // 1 to 12
+  card       Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation("UserCardInvoices", fields: [userId], references: [id])
+  month      Int      // 1 to 12
   year       Int
-  realAmount Float         // User-entered actual invoice value
+  realAmount Float    // User-entered actual invoice value
   status     InvoiceStatus @default(ABERTA)
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@unique([cardId, month, year])
 }
@@ -67,87 +100,145 @@ model Income {
   date                DateTime // Single date or recurrence start/fallback date
   endDate             DateTime? // Optional recurrence end date; null means permanent
   recurrenceCount     Int?     // Optional total expected occurrences for limited recurring incomes
+  userId              String
+  user                User     @relation(fields: [userId], references: [id])
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 }
 
 model FixedExpense {
-  id              String    @id @default(uuid())
+  id              String   @id @default(uuid())
   description     String
   amount          Float
-  variationMargin Float     @default(0.0) // Variation margin percentage (e.g., 15.0 for 15%)
-  dueDay          Int       // Day of the month it's due
-  recurrenceType  String    @default("MONTHLY") // "WEEKLY", "BIWEEKLY", "MONTHLY", "YEARLY"
+  variationMargin Float    @default(0.0) // Variation margin percentage (e.g., 15.0 for 15%)
+  dueDay          Int      // Day of the month it's due
+  recurrenceType  String   @default("MONTHLY") // "WEEKLY", "BIWEEKLY", "MONTHLY", "YEARLY"
   recurrenceDay   Int?      // Weekday (0-6) for weekly, day of month for biweekly/monthly/yearly
   recurrenceMonth Int?      // Month (1-12) for yearly recurrence
   categoryId      String
-  category        Category  @relation(fields: [categoryId], references: [id])
+  category        Category @relation(fields: [categoryId], references: [id])
   payments        FixedExpensePayment[]
   startDate       DateTime
   endDate         DateTime?
   isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model FixedExpensePayment {
-  id             String       @id @default(uuid())
+  id             String   @id @default(uuid())
   fixedExpenseId String
   fixedExpense   FixedExpense @relation(fields: [fixedExpenseId], references: [id], onDelete: Cascade)
   month          Int          // 1 to 12
   year           Int
   isPaid         Boolean      @default(false)
   paidAt         DateTime?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@unique([fixedExpenseId, month, year])
 }
 
 model Debt {
-  id          String    @id @default(uuid())
+  id          String   @id @default(uuid())
   description String
   amount      Float
   isRecurring Boolean   @default(false)
-  date        DateTime  // Single due date or recurrence start date
+  date        DateTime // Single due date or recurrence start date
   dueDay      Int?      // Day of month for recurring debts
   categoryId  String?
   category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   endDate     DateTime?
   isPaid      Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Installment {
-  id                   String        @id @default(uuid())
+  id                   String   @id @default(uuid())
   description          String
-  totalAmount          Float         // Total price of purchase
-  totalInstallments    Int           // Total number of installments (e.g., 12)
-  currentInstallment   Int           @default(1) // Current starting installment index
-  amountPerInstallment Float         // Amount of each installment (totalAmount / totalInstallments)
-  startDate            DateTime      // Date of the first installment
+  totalAmount          Float    // Total price of purchase
+  totalInstallments    Int      // Total number of installments (e.g., 12)
+  currentInstallment   Int      @default(1) // Current starting installment index
+  amountPerInstallment Float    // Amount of each installment (totalAmount / totalInstallments)
+  startDate            DateTime // Date of the first installment
   cardId               String
-  card                 Card          @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  card                 Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
   categoryId           String
-  category             Category      @relation(fields: [categoryId], references: [id])
+  category             Category @relation(fields: [categoryId], references: [id])
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id])
   transactions         Transaction[]
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 }
 
 model Transaction {
-  id            String       @id @default(uuid())
+  id            String   @id @default(uuid())
   description   String
   amount        Float
   date          DateTime
-  type          String       // "INFLOW" or "OUTFLOW"
+  type          String   // "INFLOW" or "OUTFLOW"
   categoryId    String?
-  category      Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  category      Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   cardId        String?
-  card          Card?        @relation(fields: [cardId], references: [id], onDelete: SetNull)
+  card          Card?     @relation(fields: [cardId], references: [id], onDelete: SetNull)
   installmentId String?
   installment   Installment? @relation(fields: [installmentId], references: [id], onDelete: Cascade)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
 }

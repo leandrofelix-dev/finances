@@ -12,25 +12,34 @@ async function main() {
   await prisma.income.deleteMany();
   await prisma.card.deleteMany();
   await prisma.category.deleteMany();
+  await prisma.user.deleteMany();
+
+  console.log("Criando usuário padrão...");
+  const user = await prisma.user.create({
+    data: {
+      name: "Usuário Teste",
+      email: "teste@example.com",
+    }
+  });
 
   console.log("Criando categorias...");
   const catBills = await prisma.category.create({
-    data: { name: "Contas Fixas", color: "#eebefa", icon: "Home", allocationPercentage: 40.0 },
+    data: { name: "Contas Fixas", color: "#eebefa", icon: "Home", allocationPercentage: 40.0, userId: user.id },
   });
   const catFood = await prisma.category.create({
-    data: { name: "Alimentação", color: "#ffc9c9", icon: "Utensils", allocationPercentage: 25.0 },
+    data: { name: "Alimentação", color: "#ffc9c9", icon: "Utensils", allocationPercentage: 25.0, userId: user.id },
   });
   const catLeisure = await prisma.category.create({
-    data: { name: "Lazer", color: "#ffd8a8", icon: "Smile", allocationPercentage: 15.0 },
+    data: { name: "Lazer", color: "#ffd8a8", icon: "Smile", allocationPercentage: 15.0, userId: user.id },
   });
   await prisma.category.create({
-    data: { name: "Investimentos/Reserva", color: "#b2f2bb", icon: "TrendingUp", allocationPercentage: 20.0 },
+    data: { name: "Investimentos/Reserva", color: "#b2f2bb", icon: "TrendingUp", allocationPercentage: 20.0, userId: user.id },
   });
   const catShopping = await prisma.category.create({
-    data: { name: "Compras", color: "#d0ebff", icon: "ShoppingBag", allocationPercentage: 0.0 },
+    data: { name: "Compras", color: "#d0ebff", icon: "ShoppingBag", allocationPercentage: 0.0, userId: user.id },
   });
   const catOthers = await prisma.category.create({
-    data: { name: "Outros", color: "#e9ecef", icon: "DollarSign", allocationPercentage: 0.0 },
+    data: { name: "Outros", color: "#e9ecef", icon: "DollarSign", allocationPercentage: 0.0, userId: user.id },
   });
 
   console.log("Criando cartões...");
@@ -41,6 +50,7 @@ async function main() {
       closingDay: 5,
       dueDay: 10,
       color: "#8a05be",
+      userId: user.id,
     },
   });
   const cardXP = await prisma.card.create({
@@ -50,6 +60,7 @@ async function main() {
       closingDay: 15,
       dueDay: 25,
       color: "#000000",
+      userId: user.id,
     },
   });
 
@@ -61,6 +72,7 @@ async function main() {
       amount: 5500.0,
       isRecurring: true,
       date: new Date("2026-06-01T00:00:00.000Z"),
+      userId: user.id,
     },
   });
   // Receita reservada para investimento
@@ -70,6 +82,7 @@ async function main() {
       amount: 1200.0,
       isRecurring: false,
       date: new Date("2026-06-05T00:00:00.000Z"),
+      userId: user.id,
     },
   });
   // Outra receita de investimentos
@@ -79,6 +92,7 @@ async function main() {
       amount: 300.0,
       isRecurring: true,
       date: new Date("2026-06-08T00:00:00.000Z"),
+      userId: user.id,
     },
   });
 
@@ -91,6 +105,7 @@ async function main() {
       dueDay: 10,
       categoryId: catBills.id,
       startDate: new Date("2026-06-01T00:00:00.000Z"),
+      userId: user.id,
     },
   });
   await prisma.fixedExpense.create({
@@ -101,6 +116,7 @@ async function main() {
       dueDay: 15,
       categoryId: catBills.id,
       startDate: new Date("2026-06-01T00:00:00.000Z"),
+      userId: user.id,
     },
   });
   await prisma.fixedExpense.create({
@@ -111,6 +127,7 @@ async function main() {
       dueDay: 20,
       categoryId: catLeisure.id,
       startDate: new Date("2026-06-01T00:00:00.000Z"),
+      userId: user.id,
     },
   });
   await prisma.fixedExpense.create({
@@ -121,6 +138,7 @@ async function main() {
       dueDay: 8,
       categoryId: catBills.id,
       startDate: new Date("2026-06-01T00:00:00.000Z"),
+      userId: user.id,
     },
   });
 
@@ -133,6 +151,7 @@ async function main() {
       date: new Date("2026-06-01T00:00:00.000Z"),
       dueDay: 12,
       categoryId: catBills.id,
+      userId: user.id,
     },
   });
   await prisma.debt.create({
@@ -142,6 +161,7 @@ async function main() {
       isRecurring: false,
       date: new Date("2026-06-18T00:00:00.000Z"),
       categoryId: catOthers.id,
+      userId: user.id,
     },
   });
 
@@ -156,6 +176,7 @@ async function main() {
       startDate: new Date("2026-04-10T00:00:00.000Z"),
       cardId: cardNubank.id,
       categoryId: catShopping.id,
+      userId: user.id,
     },
   });
 
@@ -169,6 +190,7 @@ async function main() {
       startDate: new Date("2026-01-15T00:00:00.000Z"),
       cardId: cardXP.id,
       categoryId: catOthers.id,
+      userId: user.id,
     },
   });
 
@@ -181,6 +203,7 @@ async function main() {
       type: "OUTFLOW",
       date: new Date("2026-06-03T14:30:00.000Z"),
       categoryId: catFood.id,
+      userId: user.id,
     },
   });
   await prisma.transaction.create({
@@ -190,6 +213,7 @@ async function main() {
       type: "OUTFLOW",
       date: new Date("2026-06-06T20:00:00.000Z"),
       categoryId: catFood.id,
+      userId: user.id,
     },
   });
   await prisma.transaction.create({
@@ -199,6 +223,7 @@ async function main() {
       type: "OUTFLOW",
       date: new Date("2026-06-07T18:15:00.000Z"),
       categoryId: catLeisure.id,
+      userId: user.id,
     },
   });
 
@@ -212,6 +237,7 @@ async function main() {
       categoryId: catShopping.id,
       cardId: cardNubank.id,
       installmentId: instLaptop.id,
+      userId: user.id,
     },
   });
   await prisma.transaction.create({
@@ -222,6 +248,7 @@ async function main() {
       date: new Date("2026-06-02T21:30:00.000Z"), // antes do fechamento dia 5
       categoryId: catFood.id,
       cardId: cardNubank.id,
+      userId: user.id,
     },
   });
 
@@ -235,6 +262,7 @@ async function main() {
       categoryId: catOthers.id,
       cardId: cardXP.id,
       installmentId: instGym.id,
+      userId: user.id,
     },
   });
 
@@ -247,6 +275,7 @@ async function main() {
       year: 2026,
       realAmount: 750.0,
       status: "PAGA",
+      userId: user.id,
     },
   });
   // Cadastrar a fatura estimada/real para Nubank em Junho
@@ -257,6 +286,7 @@ async function main() {
       year: 2026,
       realAmount: 750.0, // Usuário cadastrou o valor que viu no app da Nubank
       status: "FECHADA",
+      userId: user.id,
     },
   });
 
