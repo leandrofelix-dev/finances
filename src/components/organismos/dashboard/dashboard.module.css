@@ -1,6 +1,7 @@
 .topRow {
   display: grid;
   grid-template-columns: minmax(280px, 0.8fr) minmax(0, 2.2fr);
+  min-width: 0;
   gap: 16px;
   align-items: stretch;
 }
@@ -8,6 +9,7 @@
 .middleRow {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.9fr);
+  min-width: 0;
   gap: 16px;
 }
 
@@ -18,16 +20,20 @@
 .bottomRow {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.8fr);
+  min-width: 0;
   gap: 16px;
 }
 
 .secondaryRow {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
   gap: 16px;
 }
 
 .card {
+  min-width: 0;
+  overflow: hidden;
   border: 1px solid var(--fynix-border);
   border-radius: var(--fynix-radius-lg);
   background: var(--fynix-surface);
@@ -194,6 +200,8 @@
 
 .chartWrap {
   height: 280px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .advisor {
@@ -248,6 +256,7 @@
 
 .donutWrap {
   display: flex;
+  min-width: 0;
   align-items: center;
   gap: 16px;
 }

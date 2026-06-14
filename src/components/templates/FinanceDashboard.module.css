@@ -1,10 +1,13 @@
 .page {
   display: grid;
+  min-width: 0;
+  max-width: 100%;
   gap: 20px;
 }
 
 .pageHeader {
   display: flex;
+  min-width: 0;
   justify-content: space-between;
   gap: 20px;
   align-items: flex-start;
@@ -29,22 +32,29 @@
 
 .overviewStack {
   display: grid;
+  min-width: 0;
+  max-width: 100%;
   gap: 16px;
 }
 
 .unifiedStack {
   display: grid;
+  min-width: 0;
+  max-width: 100%;
   gap: 18px;
 }
 
 .crudGrid {
   display: grid;
   grid-template-columns: 1fr;
+  min-width: 0;
+  max-width: 100%;
   gap: 16px;
   align-items: start;
 }
 
 .panel {
+  min-width: 0;
   overflow: hidden;
   border: 1px solid var(--fynix-border);
   border-radius: var(--fynix-radius-lg);

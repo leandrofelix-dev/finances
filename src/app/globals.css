@@ -139,14 +139,18 @@
 }
 
 html {
+  width: 100%;
   min-height: 100%;
+  overflow-x: hidden;
   background: var(--background);
   color-scheme: light;
 }
 
 body {
+  width: 100%;
   min-height: 100vh;
   margin: 0;
+  overflow-x: hidden;
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
@@ -179,19 +183,26 @@ button {
 
 .app-shell {
   display: flex;
+  width: 100%;
+  min-width: 0;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .app-main {
   display: flex;
+  width: 100%;
   min-width: 0;
   flex: 1;
   flex-direction: column;
 }
 
 .app-content {
+  width: 100%;
   min-width: 0;
+  max-width: 100%;
   flex: 1;
+  overflow-x: hidden;
   padding: 24px 28px 32px;
 }
 

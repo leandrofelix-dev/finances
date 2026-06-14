@@ -92,8 +92,8 @@ export function ProjectionPlanner() {
 
   return (
     <div className={styles.page}>
-      <section className="grid gap-4 lg:grid-cols-[1.4fr_auto]">
-        <div>
+      <section className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1.4fr)_auto]">
+        <div className="min-w-0">
           <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Simulação temporal</div>
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground">Projeções até uma data futura.</h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
@@ -101,7 +101,7 @@ export function ProjectionPlanner() {
             parcelamentos afetam o saldo previsto no caminho até o dia escolhido.
           </p>
         </div>
-        <form className="flex items-center gap-2 self-start rounded-xl border border-border bg-card p-2 shadow-sm" onSubmit={submit}>
+        <form className="flex min-w-0 flex-col items-stretch gap-2 self-start rounded-xl border border-border bg-card p-2 shadow-sm sm:flex-row sm:items-center" onSubmit={submit}>
           <DateInput
             min={new Date().toISOString().slice(0, 10)}
             onChange={(event) => setTargetDate(event.target.value)}
@@ -114,7 +114,7 @@ export function ProjectionPlanner() {
         </form>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid min-w-0 gap-4 md:grid-cols-3">
         <Metric label="Saldo projetado" value={currency.format(projection?.projectedBalance ?? 0)} />
         <Metric label="Dias simulados" value={String(projection?.points.length ?? 0)} />
         <Metric label="Status" value={message} />
