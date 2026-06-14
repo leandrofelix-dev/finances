@@ -2,13 +2,24 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 
+const trustedOrigins = process.env.BETTER_AUTH_TRUSTED_ORIGINS?.split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const baseURL = process.env.BETTER_AUTH_URL;
+const useSecureCookies = baseURL?.startsWith("https://") ?? false;
+
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
   // Configurações essenciais
   secret: process.env.BETTER_AUTH_SECRET ?? "dev-secret-change-me",
-  baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
+  baseURL,
+  advanced: {
+    useSecureCookies,
+  },
+  ...(trustedOrigins?.length ? { trustedOrigins } : {}),
   // Enable email and password authentication
   emailAndPassword: {
     enabled: true,
