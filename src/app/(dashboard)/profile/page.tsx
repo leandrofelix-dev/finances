@@ -172,29 +172,21 @@ export default function ProfilePage() {
     );
   }
 
-  if (!session) {
+  if (!session?.user) {
     return null; // Will redirect via useEffect
   }
 
   const handleLogout = async () => {
     try {
-      await authClient.signOut({
-        fetchOptions: {
-          onSuccess: () => {
-            toast.success("Sessão encerrada.");
-            router.push("/auth/login");
-          },
-          onError: (ctx) => {
-            toast.error(ctx.error.message || "Erro ao sair.");
-          },
-        },
-      });
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Erro ao sair.");
+      await authClient.signOut();
+    } catch {
+      // fallback: ignore error
     }
+    document.cookie = "better-auth.session_token=; max-age=0; path=/;";
+    window.location.href = "/auth/login";
   };
 
-  const fallbackLetter = session.user.name ? session.user.name.charAt(0).toUpperCase() : "?";
+  const fallbackLetter = session.user?.name ? session.user.name.charAt(0).toUpperCase() : "?";
 
   return (
     <div className="mx-auto max-w-2xl p-4 md:p-6 space-y-6">

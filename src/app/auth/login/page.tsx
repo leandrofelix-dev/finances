@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/atoms/card";
@@ -10,11 +9,14 @@ import { Button } from "@/components/atoms/Button";
 import { Label } from "@/components/atoms/label";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const redirectTo = typeof window !== "undefined"
+    ? new URLSearchParams(window.location.search).get("redirect") || "/"
+    : "/";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +27,7 @@ export default function LoginPage() {
         { email, password },
         {
           onSuccess: () => {
-            router.push("/profile");
+            window.location.href = redirectTo;
           },
           onError: (ctx) => {
             setError(ctx.error.message || "E-mail ou senha incorretos.");

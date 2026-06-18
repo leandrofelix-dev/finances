@@ -4,6 +4,7 @@ import {
   ArrowDownCircle,
   BadgeDollarSign,
   BarChart3,
+  CalendarDays,
   CreditCard,
   LayoutDashboard,
   Settings2,
@@ -55,6 +56,7 @@ export function isLinkActive(pathname: string, href: string) {
 
 export const mainLinks: NavLinkItem[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/calendar", label: "Calendário", icon: CalendarDays },
   { href: "/projections", label: "Projeções", icon: BarChart3 },
 ];
 
@@ -85,6 +87,7 @@ export const dockPrimaryLinks: NavLinkItem[] = [
 ];
 
 export const dockMoreLinks: NavLinkItem[] = [
+  { href: "/calendar", label: "Calendário", icon: CalendarDays },
   ...incomeLinks,
   ...outcomeLinks.filter((link) => link.href !== "/transactions"),
   ...creditCardLinks.filter((link) => link.href !== "/cards"),

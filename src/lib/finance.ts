@@ -741,3 +741,299 @@ export async function buildProjection(userId: string, targetDate: Date, referenc
     installmentEndings,
   };
 }
+
+export type CalendarDayItem = {
+  id: string;
+  type:
+    | "income"
+    | "transaction_inflow"
+    | "transaction_outflow"
+    | "fixed_expense"
+    | "installment"
+    | "debt"
+    | "invoice";
+  label: string;
+  amount: number;
+  category?: { name: string; color: string } | null;
+  card?: { name: string; color: string } | null;
+  source: "income" | "transaction" | "fixed_expense" | "installment" | "debt" | "invoice";
+};
+
+export type CalendarDaySummary = {
+  date: string;
+  income: number;
+  expense: number;
+  balance: number;
+  items: CalendarDayItem[];
+};
+
+export type CalendarMonthData = {
+  year: number;
+  month: number;
+  days: CalendarDaySummary[];
+  totals: { income: number; expense: number; balance: number };
+};
+
+export function toDateKey(year: number, month: number, day: number) {
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+export function toDateKeyFromDb(date: Date) {
+  return toDateKey(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
+}
+
+export function toDateKeyFromLocal(date: Date) {
+  return toDateKey(date.getFullYear(), date.getMonth() + 1, date.getDate());
+}
+
+const calendarItemTypeOrder: Record<CalendarDayItem["type"], number> = {
+  income: 0,
+  transaction_inflow: 1,
+  transaction_outflow: 2,
+  fixed_expense: 3,
+  installment: 4,
+  debt: 5,
+  invoice: 6,
+};
+
+export async function getCalendarMonth(userId: string, year: number, month: number): Promise<CalendarMonthData> {
+  const monthDate = new Date(year, month - 1, 1);
+  const monthRange = getMonthRange(monthDate);
+
+  const [incomes, fixedExpenses, installments, transactions, debts, invoices] = await Promise.all([
+    prisma.income.findMany({
+      where: {
+        userId,
+        OR: [
+          {
+            isRecurring: true,
+            date: { lte: monthRange.end },
+            OR: [{ endDate: null }, { endDate: { gte: monthRange.start } }],
+          },
+          { isRecurring: false, date: { gte: monthRange.start, lte: monthRange.end } },
+        ],
+      },
+      orderBy: { date: "asc" },
+    }),
+    prisma.fixedExpense.findMany({
+      where: { userId, isActive: true },
+      include: { category: true, payments: true },
+      orderBy: { startDate: "asc" },
+    }),
+    prisma.installment.findMany({
+      where: { userId },
+      include: { card: true, category: true },
+      orderBy: { startDate: "asc" },
+    }),
+    prisma.transaction.findMany({
+      where: {
+        userId,
+        date: { gte: monthRange.start, lte: monthRange.end },
+      },
+      include: { category: true, card: true },
+      orderBy: { date: "asc" },
+    }),
+    prisma.debt.findMany({
+      where: { userId, isPaid: false },
+      include: { category: true },
+      orderBy: { date: "asc" },
+    }),
+    prisma.cardInvoice.findMany({
+      where: { userId, month, year },
+      include: { card: true },
+    }),
+  ]);
+
+  const daysMap = new Map<string, CalendarDaySummary>();
+  const processedInvoices = new Set<string>();
+
+  function ensureDay(dateKey: string) {
+    const existing = daysMap.get(dateKey);
+    if (existing) return existing;
+
+    const summary: CalendarDaySummary = {
+      date: dateKey,
+      income: 0,
+      expense: 0,
+      balance: 0,
+      items: [],
+    };
+    daysMap.set(dateKey, summary);
+    return summary;
+  }
+
+  function addExpense(dateKey: string, item: CalendarDayItem) {
+    const day = ensureDay(dateKey);
+    day.expense += item.amount;
+    day.items.push(item);
+  }
+
+  for (let dayNumber = 1; dayNumber <= monthRange.end.getDate(); dayNumber++) {
+    const day = new Date(year, month - 1, dayNumber, 12, 0, 0, 0);
+    const dateKey = toDateKeyFromLocal(day);
+
+    for (const income of incomes) {
+      if (!incomeOccursOnDay(income, day)) continue;
+
+      const summary = ensureDay(dateKey);
+      summary.income += income.amount;
+      summary.items.push({
+        id: `income-${income.id}-${dateKey}`,
+        type: "income",
+        label: income.description,
+        amount: income.amount,
+        source: "income",
+      });
+    }
+
+    for (const expense of fixedExpenses) {
+      if (!fixedExpenseOccursOnDay(expense, day)) continue;
+
+      const amount = fixedExpenseAmount(expense);
+      addExpense(dateKey, {
+        id: `fixed-${expense.id}-${dateKey}`,
+        type: "fixed_expense",
+        label: expense.description,
+        amount,
+        category: { name: expense.category.name, color: expense.category.color },
+        source: "fixed_expense",
+      });
+    }
+
+    for (const installment of installments) {
+      const installmentNumber = installmentNumberForMonth(
+        installment.startDate,
+        installment.currentInstallment,
+        new Date(day.getFullYear(), day.getMonth(), 1)
+      );
+      const dueDay = clampDay(day.getFullYear(), day.getMonth(), installment.card.dueDay);
+      const hasInstallmentTxInMonth = transactions.some(
+        (transaction) =>
+          transaction.installmentId === installment.id &&
+          transaction.date.getMonth() === day.getMonth() &&
+          transaction.date.getFullYear() === day.getFullYear()
+      );
+
+      if (
+        hasInstallmentTxInMonth ||
+        installmentNumber < installment.currentInstallment ||
+        installmentNumber > installment.totalInstallments ||
+        day.getDate() !== dueDay
+      ) {
+        continue;
+      }
+
+      addExpense(dateKey, {
+        id: `installment-${installment.id}-${dateKey}`,
+        type: "installment",
+        label: `${installment.description} (${installmentNumber}/${installment.totalInstallments})`,
+        amount: installment.amountPerInstallment,
+        category: { name: installment.category.name, color: installment.category.color },
+        card: { name: installment.card.name, color: installment.card.color },
+        source: "installment",
+      });
+    }
+
+    for (const debt of debts) {
+      const debtDay = debt.dueDay ?? debt.date.getUTCDate();
+      const recurringDueDay = clampDay(day.getFullYear(), day.getMonth(), debtDay);
+      const isRecurringDebt =
+        debt.isRecurring &&
+        debt.date <= day &&
+        (!debt.endDate || debt.endDate >= day) &&
+        day.getDate() === recurringDueDay;
+      const isSingleDebt =
+        !debt.isRecurring && toDateKeyFromDb(debt.date) === dateKey;
+
+      if (!isRecurringDebt && !isSingleDebt) continue;
+
+      addExpense(dateKey, {
+        id: `debt-${debt.id}-${dateKey}`,
+        type: "debt",
+        label: debt.description,
+        amount: debt.amount,
+        category: debt.category
+          ? { name: debt.category.name, color: debt.category.color }
+          : null,
+        source: "debt",
+      });
+    }
+
+    for (const invoice of invoices) {
+      if (processedInvoices.has(invoice.id)) continue;
+
+      const dueDay = clampDay(day.getFullYear(), day.getMonth(), invoice.card.dueDay);
+      if (day.getDate() !== dueDay) continue;
+
+      processedInvoices.add(invoice.id);
+      addExpense(dateKey, {
+        id: `invoice-${invoice.id}-${dateKey}`,
+        type: "invoice",
+        label:
+          invoice.status === "PAGA"
+            ? `Fatura ${invoice.card.name} (paga)`
+            : `Fatura ${invoice.card.name}`,
+        amount: invoice.realAmount,
+        card: { name: invoice.card.name, color: invoice.card.color },
+        source: "invoice",
+      });
+    }
+
+    for (const transaction of transactions) {
+      if (toDateKeyFromDb(transaction.date) !== dateKey) continue;
+
+      const summary = ensureDay(dateKey);
+      const isInflow = transaction.type === "INFLOW";
+
+      if (isInflow) {
+        summary.income += transaction.amount;
+        summary.items.push({
+          id: transaction.id,
+          type: "transaction_inflow",
+          label: transaction.description,
+          amount: transaction.amount,
+          category: transaction.category
+            ? { name: transaction.category.name, color: transaction.category.color }
+            : null,
+          card: transaction.card ? { name: transaction.card.name, color: transaction.card.color } : null,
+          source: "transaction",
+        });
+        continue;
+      }
+
+      summary.expense += transaction.amount;
+      summary.items.push({
+        id: transaction.id,
+        type: "transaction_outflow",
+        label: transaction.description,
+        amount: transaction.amount,
+        category: transaction.category
+          ? { name: transaction.category.name, color: transaction.category.color }
+          : null,
+        card: transaction.card ? { name: transaction.card.name, color: transaction.card.color } : null,
+        source: "transaction",
+      });
+    }
+  }
+
+  const days = Array.from(daysMap.values())
+    .map((day) => ({
+      ...day,
+      balance: day.income - day.expense,
+      items: day.items.sort(
+        (left, right) => calendarItemTypeOrder[left.type] - calendarItemTypeOrder[right.type]
+      ),
+    }))
+    .sort((left, right) => left.date.localeCompare(right.date));
+
+  const totals = days.reduce(
+    (acc, day) => ({
+      income: acc.income + day.income,
+      expense: acc.expense + day.expense,
+      balance: acc.balance + day.balance,
+    }),
+    { income: 0, expense: 0, balance: 0 }
+  );
+
+  return { year, month, days, totals };
+}

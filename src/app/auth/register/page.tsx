@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/atoms/card";
 import { Input } from "@/components/atoms/input";
@@ -13,7 +12,6 @@ import { Camera } from "lucide-react";
 import Link from "next/link";
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -48,7 +46,7 @@ export default function RegisterPage() {
         },
         {
           onSuccess: () => {
-            router.push("/auth/login");
+            window.location.href = "/";
           },
           onError: (ctx) => {
             setError(ctx.error.message || "Erro ao criar conta.");
