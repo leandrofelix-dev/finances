@@ -20,7 +20,7 @@ const baseURL =
           "192.168.*.*:*",
           "10.*.*.*:*",
         ],
-        protocol: "http",
+        protocol: "http" as const,
         fallback: productionBaseURL ?? "http://localhost:3000",
       };
 
